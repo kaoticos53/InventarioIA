@@ -1,0 +1,26 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost,1433;Database=InventarioDB;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;"
+  },
+  "JwtSettings": {
+    "Secret": "clave_secreta_muy_larga_para_jwt_token_que_debe_ser_segura_y_unica",
+    "Issuer": "InventarioAPI",
+    "Audience": "InventarioClient",
+    "ExpireMinutes": 1440,
+    "RefreshTokenExpireDays": 7
+  },
+  "SendGrid": {
+    "ApiKey": "tu_api_key_de_sendgrid",
+    "FromEmail": "no-reply@inventario.com",
+    "FromName": "Sistema de Inventario"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "AllowedHosts": "*",
+  "UseSendGrid": false
+}
