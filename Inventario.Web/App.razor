@@ -1,0 +1,87 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Blazored.LocalStorage
+@using Microsoft.AspNetCore.Components.Routing
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
+        <Found Context="routeData">
+            @{
+                var isAuthRoute = routeData.PageType.CustomAttributes.Any(attr => attr.AttributeType == typeof(AuthorizeAttribute));
+                var isLoginRoute = routeData.PageType == typeof(Pages.Login) || 
+                                 routeData.PageType == typeof(Pages.Register) ||
+                                 routeData.PageType == typeof(Pages.ForgotPassword) ||
+                                 routeData.PageType == typeof(Pages.ResetPassword) ||
+                                 routeData.PageType == typeof(Pages.VerifyEmail);
+            }
+            
+            @if (isAuthRoute && !isLoginRoute)
+            {
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                    <NotAuthorized>
+                        @if (!context.User.Identity.IsAuthenticated)
+                        {
+                            <MudContainer Class="d-flex flex-column align-center justify-center" Style="height: 80vh;">
+                                <MudPaper Class="pa-6 text-center" Elevation="0">
+                                    <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Large" Class="mb-4" Style="font-size: 4rem; opacity: 0.7;" />
+                                    <MudText Typo="Typo.h5" Class="mb-2">Acceso no autorizado</MudText>
+                                    <MudText Class="mb-4">Debes iniciar sesión para acceder a esta página.</MudText>
+                                    <MudButton Href="/login" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Login">
+                                        Ir al inicio de sesión
+                                    </MudButton>
+                                </MudPaper>
+                            </MudContainer>
+                        }
+                        else
+                        {
+                            <MudContainer Class="d-flex flex-column align-center justify-center" Style="height: 80vh;">
+                                <MudPaper Class="pa-6 text-center" Elevation="0">
+                                    <MudIcon Icon="@Icons.Material.Filled.Block" Size="Size.Large" Class="mb-4" Style="font-size: 4rem; color: var(--mud-palette-error);" />
+                                    <MudText Typo="Typo.h5" Class="mb-2">Permiso denegado</MudText>
+                                    <MudText Class="mb-4">No tienes los permisos necesarios para acceder a esta página.</MudText>
+                                    <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Home">
+                                        Volver al inicio
+                                    </MudButton>
+                                </MudPaper>
+                            </MudContainer>
+                        }
+                    </NotAuthorized>
+                    <Authorizing>
+                        <MudContainer Class="d-flex flex-column align-center justify-center" Style="height: 100vh;">
+                            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                            <MudText Class="mt-4">Cargando...</MudText>
+                        </MudContainer>
+                    </Authorizing>
+                </AuthorizeRouteView>
+            }
+            else
+            {
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            }
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <MudLayout>
+                <MudMainContent>
+                    <MudContainer Class="d-flex flex-column align-center justify-center" Style="height: 100vh;">
+                        <MudPaper Class="pa-6 text-center" Elevation="0">
+                            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Size="Size.Large" Class="mb-4" Style="font-size: 4rem; color: var(--mud-palette-warning);" />
+                            <MudText Typo="Typo.h4" Class="mb-2">Página no encontrada</MudText>
+                            <MudText Class="mb-4">Lo sentimos, la página que estás buscando no existe o ha sido movida.</MudText>
+                            <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary" EndIcon="@Icons.Material.Filled.Home">
+                                Volver al inicio
+                            </MudButton>
+                        </MudPaper>
+                    </MudContainer>
+                </MudMainContent>
+            </MudLayout>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
+
+@code {
+    // Aquí puedes agregar lógica adicional si es necesario
+}

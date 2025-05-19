@@ -1,0 +1,290 @@
+@page "/verificar-correo"
+@page "/verificar-correo/{Email}"
+@using MudBlazor
+@using Inventario.Web.Models
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+@inject ISnackbar Snackbar
+@inject ILogger<VerifyEmail> Logger
+
+<PageTitle>Verificar Correo Electrónico - Sistema de Inventario</PageTitle>
+
+<MudThemeProvider Theme="_verifyEmailTheme" IsDarkMode="true" />
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="my-8">
+    <MudPaper Class="pa-8" Elevation="0" Style="background-color: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-inputs); border-radius: 8px;">
+        <!-- Encabezado -->
+        <div class="text-center mb-8">
+            <MudAvatar Size="XLarge" Class="mx-auto mb-3" Style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);">
+                <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Size="Size.Large" Color="Color.Surface" />
+            </MudAvatar>
+            <MudText Typo="Typo.h4" Class="mb-2">Verificar Correo Electrónico</MudText>
+            <MudText Class="text-secondary" Style="opacity: 0.8;">Por favor, verifica tu dirección de correo electrónico para continuar</MudText>
+        </div>
+
+        @if (_isLoading)
+        {
+            <div class="text-center my-8">
+                <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+                <MudText Class="mt-4">Verificando tu correo electrónico...</MudText>
+            </div>
+        }
+        else if (_isSuccess)
+        {
+            <div class="text-center my-8">
+                <MudIcon Icon="@Icons.Material.Filled.Verified" Size="Size.XLarge" Color="Color.Success" Class="mb-4" />
+                <MudText Typo="Typo.h5" Class="mb-4">¡Correo Verificado!</MudText>
+                <MudText Class="mb-6">Tu dirección de correo electrónico ha sido verificada exitosamente. Ahora puedes disfrutar de todas las funciones de nuestra plataforma.</MudText>
+                <MudButton 
+                    Variant="Variant.Filled" 
+                    Color="Color.Primary" 
+                    Class="mt-4"
+                    OnClick="() => Navigation.NavigateTo("/")">
+                    Ir al Inicio
+                </MudButton>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(_email))
+        {
+            <EditForm Model="@_model" OnValidSubmit="HandleVerification">
+                <MudPaper Class="pa-6 mb-6" Style="background-color: var(--mud-palette-surface); border: 1px dashed var(--mud-palette-primary); border-radius: 8px;">
+                    <div class="d-flex align-center mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" Color="Color.Primary" />
+                        <MudText>Hemos enviado un código de verificación a <strong>@_email</strong></MudText>
+                    </div>
+                    <MudText Class="text-caption">Por favor, revisa tu bandeja de entrada y copia el código de verificación que te hemos enviado.</MudText>
+                </MudPaper>
+
+                <MudTextField 
+                    @bind-Value="_model.Token" 
+                    Label="Código de Verificación" 
+                    Required="true" 
+                    RequiredError="El código de verificación es obligatorio"
+                    Class="mb-4"
+                    Variant="Variant.Outlined"
+                    Adornment="Adornment.End"
+                    AdornmentIcon="@Icons.Material.Filled.VpnKey"
+                    AdornmentColor="Color.Primary"
+                    InputType="InputType.Text"
+                    Immediate="true" />
+
+                <MudButton 
+                    Type="submit" 
+                    Variant="Variant.Filled" 
+                    Color="Color.Primary" 
+                    FullWidth="true" 
+                    Class="mt-2 mb-4"
+                    Disabled="_isProcessing">
+                    @(_isProcessing ? "Verificando..." : "Verificar Correo")
+                </MudButton>
+
+                <div class="text-center mt-4">
+                    <MudText Class="text-caption">¿No has recibido el código?</MudText>
+                    <MudButton 
+                        Variant="Variant.Text" 
+                        Color="Color.Primary" 
+                        Size="Size.Small"
+                        Disabled="_isResending"
+                        OnClick="ResendVerificationEmail"
+                        Class="text-lowercase"
+                        EndIcon="@Icons.Material.Filled.Refresh">
+                        @(_isResending ? "Reenviando..." : "Reenviar código")
+                    </MudButton>
+                </div>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mt-4">
+                        @_errorMessage
+                    </MudAlert>
+                }
+            </EditForm>
+        }
+        else
+        {
+            <div class="text-center my-8">
+                <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Size="Size.XLarge" Color="Color.Error" Class="mb-4" />
+                <MudText Typo="Typo.h6" Class="mb-4">No se pudo cargar la página de verificación</MudText>
+                <MudText Class="mb-6">El enlace de verificación es inválido o ha expirado.</MudText>
+                <MudButton 
+                    Variant="Variant.Outlined" 
+                    Color="Color.Primary" 
+                    Class="mt-4"
+                    OnClick="() => Navigation.NavigateTo('/')">
+                    Volver al Inicio
+                </MudButton>
+            </div>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [Parameter] public string? Email { get; set; }
+    
+    private readonly EmailVerificationModel _model = new();
+    private string _email = string.Empty;
+    private string _errorMessage = string.Empty;
+    private bool _isLoading = true;
+    private bool _isProcessing;
+    private bool _isResending;
+    private bool _isSuccess;
+    
+    private MudTheme _verifyEmailTheme = new()
+    {
+        Palette = new Palette()
+        {
+            Primary = "#7E6FFF",
+            PrimaryLighten = "#9E92FF",
+            PrimaryDarken = "#5D4DE8",
+            Secondary = "#FF80AB",
+            SecondaryLighten = "#FFB3D1",
+            SecondaryDarken = "#FF4D8F",
+            Background = "#1A1A2E",
+            BackgroundGrey = "#2A2A3E",
+            Surface = "#0F3460",
+            DrawerBackground = "#16213E",
+            AppbarBackground = "rgba(26, 26, 46, 0.8)",
+            TextPrimary = "rgba(255, 255, 255, 0.9)",
+            TextSecondary = "rgba(255, 255, 255, 0.7)",
+            TextDisabled = "rgba(255, 255, 255, 0.5)",
+            ActionDefault = "#FFFFFF",
+            ActionDisabled = "rgba(255, 255, 255, 0.3)",
+            ActionDisabledBackground = "rgba(255, 255, 255, 0.12)",
+            PrimaryContrastText = "#FFFFFF"
+        },
+        Typography = new Typography()
+        {
+            Default = new Default() 
+            { 
+                FontFamily = new[] { "Poppins", "Roboto", "Arial", "sans-serif" },
+                FontSize = "1rem",
+                LineHeight = 1.7,
+                LetterSpacing = "0.00938em"
+            },
+            H4 = new H4() { 
+                FontSize = "2.125rem", 
+                FontWeight = 500, 
+                LineHeight = 1.2,
+                LetterSpacing = "0em"
+            },
+            H5 = new H5() { 
+                FontSize = "1.5rem", 
+                FontWeight = 500, 
+                LineHeight = 1.2,
+                LetterSpacing = "0em"
+            },
+            H6 = new H6() { 
+                FontSize = "1.25rem", 
+                FontWeight = 500, 
+                LineHeight = 1.2,
+                LetterSpacing = "0.0075em"
+            }
+        }
+    };
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Obtener el correo de la URL o del parámetro
+            var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+            
+            if (string.IsNullOrEmpty(Email) && QueryHelpers.ParseQuery(uri.Query).TryGetValue("email", out var emailFromQuery))
+            {
+                _email = emailFromQuery.ToString();
+            }
+            else if (!string.IsNullOrEmpty(Email))
+            {
+                _email = Email;
+            }
+            
+            _model.Email = _email;
+            
+            // Verificar si ya está verificado
+            if (await AuthService.IsEmailVerifiedAsync())
+            {
+                _isSuccess = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al inicializar la página de verificación de correo");
+            _errorMessage = "Ocurrió un error al cargar la página. Por favor, inténtalo de nuevo más tarde.";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+        
+        await base.OnInitializedAsync();
+    }
+    
+    private async Task HandleVerification()
+    {
+        if (_isProcessing) return;
+        
+        _isProcessing = true;
+        _errorMessage = string.Empty;
+        
+        try
+        {
+            var result = await AuthService.VerifyEmailAsync(_model);
+            
+            if (result.Success)
+            {
+                _isSuccess = true;
+                Snackbar.Add("¡Correo verificado exitosamente!", Severity.Success);
+            }
+            else
+            {
+                _errorMessage = result.Message ?? "El código de verificación no es válido o ha expirado.";
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al verificar el correo electrónico");
+            _errorMessage = "Ocurrió un error al verificar el correo electrónico. Por favor, inténtalo de nuevo.";
+            StateHasChanged();
+        }
+        finally
+        {
+            _isProcessing = false;
+        }
+    }
+    
+    private async Task ResendVerificationEmail()
+    {
+        if (_isResending || string.IsNullOrEmpty(_email)) return;
+        
+        _isResending = true;
+        _errorMessage = string.Empty;
+        
+        try
+        {
+            var result = await AuthService.SendVerificationEmailAsync(_email);
+            
+            if (result.Success)
+            {
+                Snackbar.Add("Se ha enviado un nuevo código de verificación a tu correo electrónico.", Severity.Success);
+            }
+            else
+            {
+                _errorMessage = result.Message ?? "No se pudo enviar el código de verificación. Por favor, inténtalo de nuevo.";
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al reenviar el correo de verificación");
+            _errorMessage = "Ocurrió un error al reenviar el correo de verificación. Por favor, inténtalo de nuevo más tarde.";
+            StateHasChanged();
+        }
+        finally
+        {
+            _isResending = false;
+        }
+    }
+}

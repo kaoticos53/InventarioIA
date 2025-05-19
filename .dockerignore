@@ -1,0 +1,247 @@
+# Ignorar archivos de Git
+.git
+.gitignore
+
+# Ignorar archivos de desarrollo
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Ignorar archivos de usuario
+*.userprefs
+
+# Ignorar carpetas de dependencias
+**/bin/
+**/obj/
+
+# Ignorar archivos de configuración local
+appsettings.Development.json
+appsettings.Local.json
+
+# Ignorar archivos de Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Ignorar archivos de compilación
+**/wwwroot/dist/
+**/wwwroot/_framework/
+
+# Ignorar archivos de prueba
+**/TestResults/
+
+# Ignorar archivos de copia de seguridad
+*.bak
+*.tmp
+*.swp
+*~
+
+# Ignorar archivos de IDE
+.idea/
+*.sln.iml
+
+# Ignorar archivos de Docker
+.dockerignore
+Dockerfile*
+docker-compose*
+
+# Ignorar archivos de entorno
+.env
+*.env
+
+# Ignorar archivos de publicación
+**/publish/
+
+# Ignorar archivos de paquetes NuGet
+**/packages/
+**/*.nupkg
+
+# Ignorar archivos de MSBuild
+*.log
+*.binlog
+
+# Ignorar archivos de migraciones de EF Core
+**/Migrations/
+
+# Ignorar archivos de configuración de Rider
+.idea/
+*.sln.iml
+
+# Ignorar archivos de configuración de VS Code
+.vscode/
+
+# Ignorar archivos de configuración de Visual Studio
+.vs/
+
+# Ignorar archivos de configuración de macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Ignorar archivos de configuración de Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Ignorar archivos de configuración de Linux
+.Trash-*
+
+# Ignorar archivos de configuración de Docker
+.docker/
+
+# Ignorar archivos de configuración de Kubernetes
+k8s/
+
+# Ignorar archivos de configuración de Azure
+.azure/
+
+# Ignorar archivos de configuración de AWS
+.aws/
+
+# Ignorar archivos de configuración de Google Cloud
+.gcloud/
+
+# Ignorar archivos de configuración de Heroku
+.heroku/
+
+# Ignorar archivos de configuración de Netlify
+.netlify/
+
+# Ignorar archivos de configuración de Vercel
+.vercel/
+
+# Ignorar archivos de configuración de Now
+.now/
+
+# Ignorar archivos de configuración de Firebase
+.firebase/
+
+# Ignorar archivos de configuración de Docker Compose
+docker-compose.override.yml
+
+# Ignorar archivos de configuración de Kubernetes
+k8s/
+
+# Ignorar archivos de configuración de Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Ignorar archivos de configuración de Ansible
+ansible/
+*.retry
+
+# Ignorar archivos de configuración de Vagrant
+.vagrant/
+
+# Ignorar archivos de configuración de Packer
+packer_cache/
+
+# Ignorar archivos de configuración de Consul
+.consul/
+
+# Ignorar archivos de configuración de Vault
+.vault/
+
+# Ignorar archivos de configuración de Nomad
+.nomad/
+
+# Ignorar archivos de configuración de Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Ignorar archivos de configuración de Pulumi
+.pulumi/
+
+# Ignorar archivos de configuración de Serverless
+.serverless/
+
+# Ignorar archivos de configuración de AWS SAM
+.aws-sam/
+
+# Ignorar archivos de configuración de Azure Functions
+bin/
+obj/
+
+# Ignorar archivos de configuración de Google Cloud Functions
+.gcloudignore
+
+# Ignorar archivos de configuración de Firebase Functions
+functions/lib/
+
+# Ignorar archivos de configuración de Netlify Functions
+.netlify/functions/
+
+# Ignorar archivos de configuración de Vercel Functions
+.functions/
+
+# Ignorar archivos de configuración de Now Functions
+.now/functions/
+
+# Ignorar archivos de configuración de Docker Compose
+docker-compose.override.yml
+
+# Ignorar archivos de configuración de Kubernetes
+k8s/
+
+# Ignorar archivos de configuración de Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Ignorar archivos de configuración de Ansible
+ansible/
+*.retry
+
+# Ignorar archivos de configuración de Vagrant
+.vagrant/
+
+# Ignorar archivos de configuración de Packer
+packer_cache/
+
+# Ignorar archivos de configuración de Consul
+.consul/
+
+# Ignorar archivos de configuración de Vault
+.vault/
+
+# Ignorar archivos de configuración de Nomad
+.nomad/
+
+# Ignorar archivos de configuración de Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Ignorar archivos de configuración de Pulumi
+.pulumi/
+
+# Ignorar archivos de configuración de Serverless
+.serverless/
+
+# Ignorar archivos de configuración de AWS SAM
+.aws-sam/
+
+# Ignorar archivos de configuración de Azure Functions
+bin/
+obj/
+
+# Ignorar archivos de configuración de Google Cloud Functions
+.gcloudignore
+
+# Ignorar archivos de configuración de Firebase Functions
+functions/lib/
+
+# Ignorar archivos de configuración de Netlify Functions
+.netlify/functions/
+
+# Ignorar archivos de configuración de Vercel Functions
+.functions/
+
+# Ignorar archivos de configuración de Now Functions
+.now/functions/

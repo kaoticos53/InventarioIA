@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Verifica tu correo electrónico</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.6; 
+            color: #333; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container { 
+            background-color: #ffffff; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+        }
+        .header { 
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            padding: 30px 20px; 
+            text-align: center; 
+            color: white;
+            margin-bottom: 30px;
+        }
+        .header h1 { 
+            margin: 0; 
+            font-size: 24px; 
+            font-weight: 600;
+        }
+        .content { 
+            padding: 30px; 
+            color: #444;
+        }
+        .button { 
+            display: inline-block; 
+            padding: 12px 30px; 
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            color: white !important; 
+            text-decoration: none; 
+            border-radius: 50px; 
+            font-weight: 600; 
+            margin: 20px 0; 
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+        .footer { 
+            margin-top: 30px; 
+            padding-top: 20px; 
+            border-top: 1px solid #e0e0e0; 
+            text-align: center; 
+            color: #666666; 
+            font-size: 12px; 
+            line-height: 1.5;
+        }
+        .code-box {
+            background-color: #f8f9fa;
+            border: 1px dashed #4a90e2;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            word-break: break-all;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .divider {
+            height: 1px;
+            background-color: #eee;
+            margin: 25px 0;
+            position: relative;
+            text-align: center;
+        }
+        .divider-text {
+            background-color: white;
+            color: #777;
+            font-size: 12px;
+            padding: 0 15px;
+            position: relative;
+            top: -10px;
+            display: inline-block;
+        }
+        .logo {
+            max-width: 150px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class="header">
+            <h1 style="margin: 0 0 10px 0; font-size: 28px; color: #ffffff;">{{appName}}</h1>
+            <p style="margin: 0 0 20px 0; font-size: 16px; color: #ffffff; opacity: 0.9;">{{tagline}}</p>
+            <h2 style="margin: 0; font-size: 22px; color: #ffffff;">Verifica tu correo electrónico</h2>
+        </div>
+        <div class='content'>
+            <p>Hola,</p>
+            <p>Gracias por registrarte en <strong>{{appName}}</strong>. Para comenzar a utilizar tu cuenta, necesitamos verificar que esta dirección de correo electrónico te pertenece.</p>
+            
+            <div style='text-align: center; margin: 30px 0;'>
+                <a href='{{verificationLink}}' class='button'>Verificar mi correo</a>
+            </div>
+            
+            <div class='divider'><span class='divider-text'>o</span></div>
+            
+            <p>Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:</p>
+            <div class='code-box'>
+                {{verificationLink}}
+            </div>
+            
+            <p>Si no has creado una cuenta con nosotros, por favor ignora este mensaje o <a href='mailto:{{supportEmail}}' style='color: #4a90e2;'>contáctanos</a> si crees que se trata de un error.</p>
+            
+            <p>¡Gracias!<br>El equipo de <strong>{{companyName}}</strong></p>
+        </div>
+        <div class='footer'>
+            <p>© {{year}} {{companyName}}. Todos los derechos reservados.</p>
+            <p><small>Este es un correo automático, por favor no respondas a este mensaje.</small></p>
+            <p><small>Si tienes alguna pregunta, por favor contacta a <a href='mailto:{{supportEmail}}' style='color: #4a90e2; text-decoration: none;'>{{supportEmail}}</a></small></p>
+            <p><small><a href='{{websiteUrl}}' style='color: #4a90e2; text-decoration: none;'>{{websiteUrl}}</a></small></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,255 @@
+@page "/verificar-correo"
+@page "/verificar-correo/{Email}"
+@using MudBlazor
+@using Inventario.Web.Models
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+@inject ISnackbar Snackbar
+@inject ILogger<VerifyEmail> Logger
+
+<PageTitle>Verificar Correo - Sistema de Inventario</PageTitle>
+
+<MudThemeProvider Theme="_verifyEmailTheme" IsDarkMode="true" />
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="my-8">
+    <MudPaper Class="pa-8" Elevation="0" Style="background-color: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-inputs); border-radius: 8px;">
+        <!-- Encabezado -->
+        <div class="text-center mb-8">
+            <MudAvatar Size="Size.XLarge" Class="mx-auto mb-3" Style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);">
+                <MudIcon Icon="@Icons.Material.Filled.VerifiedUser" Size="Size.Large" Color="Color.Surface" />
+            </MudAvatar>
+            <MudText Typo="Typo.h3" Class="mb-2">Verificar tu correo electrónico</MudText>
+            <MudText Class="text-secondary" Style="opacity: 0.8;">Ingresa el código que enviamos a tu correo electrónico</MudText>
+        </div>
+        
+        @if (_isLoading)
+        {
+            <div class="text-center my-8">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Class="mt-4">Cargando...</MudText>
+            </div>
+        }
+        else if (_isSuccess)
+        {
+            <div class="text-center my-8">
+                <MudIcon Icon="@Icons.Material.Filled.Verified" Size="Size.XLarge" Color="Color.Success" Class="mb-4" />
+                <MudText Typo="Typo.h5" Class="mb-4">¡Correo verificado exitosamente!</MudText>
+                <MudText Class="mb-6">Tu cuenta ha sido activada. Ahora puedes acceder a todas las funcionalidades del sistema.</MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Class="mt-4" FullWidth="true" Link="/login">
+                    Ir a Iniciar Sesión
+                </MudButton>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(_errorMessage))
+        {
+            <div class="text-center mb-6">
+                <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-4">@_errorMessage</MudAlert>
+                
+                @if (_showResendOption)
+                {
+                    <MudText Class="mt-4 mb-2">¿No recibiste el código?</MudText>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="@ResendVerification" Disabled="@_isResending">
+                        @if (_isResending)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Enviando...</span>
+                        }
+                        else
+                        {
+                            <span>Enviar un nuevo código</span>
+                        }
+                    </MudButton>
+                }
+                
+                <MudButton Variant="Variant.Text" Color="Color.Default" Class="mt-4 mx-2" Link="/login">
+                    Volver a Iniciar Sesión
+                </MudButton>
+            </div>
+        }
+        else
+        {
+            <MudForm @ref="_form" @bind-IsValid="_isFormValid" @bind-Errors="_formErrors" ValidationDelay="0">
+                <MudTextField @bind-Value="_model.Email"
+                             Label="Correo electrónico"
+                             Variant="Variant.Outlined"
+                             InputType="InputType.Email"
+                             Adornment="Adornment.Start"
+                             AdornmentIcon="@Icons.Material.Filled.Email"
+                             Class="mb-4"
+                             ReadOnly="@(!string.IsNullOrEmpty(Email))"
+                             Required="true"
+                             RequiredError="El correo electrónico es obligatorio"
+                             Validation="@(new EmailAddressAttribute() {ErrorMessage = "Ingresa un correo electrónico válido"})" />
+                             
+                <MudTextField @bind-Value="_model.Token"
+                             Label="Código de verificación"
+                             Variant="Variant.Outlined"
+                             Adornment="Adornment.Start"
+                             AdornmentIcon="@Icons.Material.Filled.VerifiedUser"
+                             Class="mb-6"
+                             Required="true"
+                             RequiredError="El código de verificación es obligatorio" />
+                
+                <MudButton Variant="Variant.Filled"
+                          Color="Color.Primary"
+                          Size="Size.Large"
+                          FullWidth="true"
+                          OnClick="@HandleVerification"
+                          Disabled="@(!_isFormValid || _isProcessing)">
+                    @if (_isProcessing)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Verificando...</span>
+                    }
+                    else
+                    {
+                        <span>Verificar Correo</span>
+                    }
+                </MudButton>
+                
+                <div class="text-center mt-4">
+                    <MudButton Variant="Variant.Text" Color="Color.Default" Link="/login">
+                        Volver a Iniciar Sesión
+                    </MudButton>
+                </div>
+            </MudForm>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+    [Parameter] public string? Email { get; set; }
+    
+    private readonly EmailVerificationModel _model = new();
+    private string _email = string.Empty;
+    private MudForm _form;
+    private bool _isFormValid;
+    private Dictionary<string, string> _formErrors = new();
+    private bool _isLoading = true;
+    private bool _isProcessing;
+    private bool _isSuccess;
+    private bool _isResending;
+    private string _errorMessage = string.Empty;
+    private bool _showResendOption;
+    
+    private MudTheme _verifyEmailTheme = new()
+    {
+        // Definición del tema personalizado para la página
+        Palette = new Palette
+        {
+            Primary = "#4CAF50",
+            PrimaryDarken = "#388E3C",
+            PrimaryLighten = "#81C784",
+            Secondary = "#FF9800",
+            SecondaryDarken = "#F57C00",
+            SecondaryLighten = "#FFB74D",
+            Background = "#121212",
+            Surface = "#1E1E1E",
+            DrawerBackground = "#1E1E1E",
+            DrawerText = "rgba(255,255,255, 0.8)",
+            AppbarBackground = "#1E1E1E",
+            AppbarText = "rgba(255,255,255, 0.8)",
+            TextPrimary = "rgba(255,255,255, 0.9)",
+            TextSecondary = "rgba(255,255,255, 0.7)",
+            ActionDefault = "#adadb1",
+            ActionDisabled = "rgba(255,255,255, 0.3)",
+            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
+            TableLines = "rgba(255,255,255, 0.12)",
+            LinesDefault = "rgba(255,255,255, 0.12)",
+            LinesInputs = "rgba(255,255,255, 0.3)",
+            TextDisabled = "rgba(255,255,255, 0.3)",
+            BackgroundGrey = "#1A1A2E",
+            TableStriped = "rgba(255, 255, 255, 0.02)",
+            TableHover = "rgba(255, 255, 255, 0.04)",
+            Divider = "rgba(255, 255, 255, 0.1)",
+        }
+    };
+    
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await Task.Delay(500); // Simular carga
+            
+            if (!string.IsNullOrEmpty(Email))
+            {
+                _model.Email = Email;
+                _email = Email;
+                _showResendOption = true;
+            }
+            
+            _isLoading = false;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al inicializar la página de verificación de correo electrónico");
+            _errorMessage = "No se pudo cargar la página. Por favor, inténtalo de nuevo.";
+            _isLoading = false;
+        }
+        
+        await base.OnInitializedAsync();
+    }
+    
+    private async Task HandleVerification()
+    {
+        if (_isProcessing) return;
+        
+        _isProcessing = true;
+        _errorMessage = string.Empty;
+        
+        try
+        {
+            var result = await AuthService.VerifyEmailAsync(_model);
+            
+            if (result.IsSuccess)
+            {
+                _isSuccess = true;
+                Snackbar.Add("¡Correo verificado exitosamente!", Severity.Success);
+            }
+            else
+            {
+                _errorMessage = result.Message ?? "El código de verificación no es válido o ha expirado.";
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al verificar el correo electrónico");
+            _errorMessage = "Ocurrió un error al verificar el correo electrónico. Por favor, inténtalo de nuevo.";
+            StateHasChanged();
+        }
+        
+        _isProcessing = false;
+    }
+    
+    private async Task ResendVerification()
+    {
+        if (_isResending || string.IsNullOrEmpty(_email)) return;
+        
+        _isResending = true;
+        _errorMessage = string.Empty;
+        
+        try
+        {
+            var result = await AuthService.SendVerificationEmailAsync(_email);
+            
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Se ha enviado un nuevo código de verificación a tu correo electrónico.", Severity.Success);
+            }
+            else
+            {
+                _errorMessage = result.Message ?? "No se pudo enviar el código de verificación.";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al reenviar el código de verificación");
+            _errorMessage = "Ocurrió un error al enviar el código de verificación. Por favor, inténtalo de nuevo.";
+        }
+        
+        _isResending = false;
+        StateHasChanged();
+    }
+}

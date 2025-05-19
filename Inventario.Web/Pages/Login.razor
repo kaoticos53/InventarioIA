@@ -1,0 +1,532 @@
+@page "/login"
+@using MudBlazor
+@using MudBlazor.Components
+@using Inventario.Web.Services.Interfaces
+@using Inventario.Web.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Hosting
+@using Microsoft.AspNetCore.Authorization
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+@inject ISnackbar Snackbar
+@inject ILogger<Login> Logger
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
+
+@attribute [AllowAnonymous]
+
+<PageTitle>Iniciar sesión - Sistema de Inventario</PageTitle>
+
+<MudThemeProvider Theme="_loginTheme" IsDarkMode="true" />
+
+<div class="login-container">
+    <MudPaper Class="login-paper" Elevation="10">
+        <div class="login-sidebar">
+            <div class="login-overlay"></div>
+            <div class="login-sidebar-content">
+                <MudAvatar Size="Size.Large" Class="mb-4" Style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(5px);">
+                    <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Large" Color="Color.Primary" />
+                </MudAvatar>
+                <MudText Typo="Typo.h4" Class="mb-2" Style="color: white; font-weight: 600;">Sistema de Inventario</MudText>
+                <MudText Class="mb-4" Style="color: rgba(255, 255, 255, 0.8); max-width: 400px;">
+                    Gestión integral de inventario con seguimiento en tiempo real y análisis avanzados.
+                </MudText>
+                <div class="mt-6">
+                    <MudChip T="string" Color="Color.Secondary" Class="mr-2 mb-2" Icon="@Icons.Material.Filled.Inventory" IconColor="Color.Inherit">Productos</MudChip>
+                    <MudChip T="string" Color="Color.Tertiary" Class="mr-2 mb-2" Icon="@Icons.Material.Filled.Category" IconColor="Color.Inherit">Categorías</MudChip>
+                    <MudChip T="string" Color="Color.Primary" Class="mb-2" Icon="@Icons.Material.Filled.Analytics" IconColor="Color.Inherit">Reportes</MudChip>
+                </div>
+            </div>
+        </div>
+        
+        <div class="login-content">
+            <!-- Logo y título -->
+            <div class="login-logo">
+                <MudAvatar Size="Size.Large" Class="mx-auto mb-3" Style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);">
+                    <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Large" Color="Color.Surface" />
+                </MudAvatar>
+                <MudText Typo="Typo.h4" Class="text-center mb-1" Style="font-weight: 600;">Bienvenido</MudText>
+                <MudText Class="text-center mb-4" Style="color: var(--mud-palette-text-secondary);">Inicia sesión para continuar</MudText>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-4">
+                    @_errorMessage
+                </MudAlert>
+            }
+
+            <!-- Formulario de inicio de sesión -->
+            <MudForm @ref="_form" @bind-IsValid="_isFormValid" ValidationDelay="0" Class="login-form">
+                <MudTextField 
+                    @bind-Value="_loginModel.Email" 
+                    Label="Correo electrónico" 
+                    For="() => _loginModel.Email" 
+                    Variant="Variant.Outlined"
+                    Margin="Margin.Dense"
+                    AdornmentIcon="@Icons.Material.Filled.Email"
+                    AdornmentAriaLabel="Correo electrónico"
+                    Class="form-field"
+                    Required="true"
+                    RequiredError="El correo electrónico es obligatorio"
+                    Immediate="true" />
+                
+                <MudTextField 
+                    @bind-Value="_loginModel.Password" 
+                    Label="Contraseña" 
+                    For="() => _loginModel.Password" 
+                    Variant="Variant.Outlined"
+                    Margin="Margin.Dense"
+                    AdornmentIcon="@_passwordInputIcon"
+                    AdornmentAriaLabel="Mostrar/ocultar contraseña"
+                    OnAdornmentClick="@((e) => TogglePasswordVisibility())"
+                    InputType="@(_showPassword ? InputType.Text : InputType.Password)"
+                    Class="form-field"
+                    Required="true"
+                    RequiredError="La contraseña es obligatoria"
+                    Immediate="true" />
+                
+                <div class="d-flex justify-space-between align-center mb-4">
+                    <div class="d-flex align-center">
+                        <input type="checkbox" @bind="_loginModel.RememberMe" class="mud-checkbox-input" />
+                        <MudText Typo="Typo.body2" Class="ml-2">Recordar sesión</MudText>
+                    </div>
+                    <MudLink Href="/forgot-password" Class="help-link">
+                        ¿Olvidaste tu contraseña?
+                    </MudLink>
+                </div>
+                
+                <MudButton 
+                    Variant="Variant.Filled" 
+                    Color="Color.Primary" 
+                    FullWidth="true" 
+                    Size="Size.Large" 
+                    Class="@(string.Join(" ", "login-button", _isLoading ? "loading" : ""))"
+                    OnClick="HandleLogin"
+                    Disabled="!_isFormValid || _isLoading">
+                    @if (_isLoading)
+                    {
+                        <MudProgressCircular Color="Color.Surface" Size="Size.Small" Class="mr-2" />
+                    }
+                    Iniciar sesión
+                </MudButton>
+                
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-4" Dense>
+                        <MudText>@_errorMessage</MudText>
+                    </MudAlert>
+                }
+                
+                <div class="d-flex align-center my-4">
+                    <MudDivider Class="flex-grow-1" />
+                    <MudText Class="mx-2">o continúa con</MudText>
+                    <MudDivider Class="flex-grow-1" />
+                </div>
+                
+                <div class="d-flex justify-center gap-3 mb-4">
+                    <MudIconButton Icon="@Icons.Custom.Brands.Microsoft" Color="Color.Default" Variant="Variant.Outlined" />
+                    <MudIconButton Icon="@Icons.Custom.Brands.Google" Color="Color.Default" Variant="Variant.Outlined" />
+                    <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Default" Variant="Variant.Outlined" />
+                </div>
+                
+                <div class="text-center mt-4">
+                    <MudText Class="text-caption">
+                        ¿No tienes una cuenta? <MudLink Href="/register" Class="font-weight-bold">Regístrate</MudLink>
+                    </MudText>
+                </div>
+            </MudForm>
+        </div>
+        
+        <!-- Lado derecho con imagen -->
+        <div class="login-sidebar">
+            <div class="login-overlay"></div>
+            <div class="login-sidebar-content">
+                <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Large" Class="mb-4" Style="font-size: 4rem;" />
+                <MudText Typo="Typo.h4" Class="mb-2">Sistema de Inventario</MudText>
+                <MudText Class="mb-6">Gestiona tu inventario de manera eficiente y en tiempo real</MudText>
+                <MudDivider Light="true" Class="my-4" />
+                <MudText Class="text-caption">© @DateTime.Now.Year Todos los derechos reservados</MudText>
+            </div>
+        </div>
+    </MudPaper>
+</div>
+
+<style>
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: var(--mud-palette-background);
+        padding: 1rem;
+        background-image: linear-gradient(135deg, var(--mud-palette-dark) 0%, var(--mud-palette-surface) 100%);
+    }
+    
+    .login-paper {
+        display: flex;
+        width: 100%;
+        max-width: 1200px;
+        border-radius: 16px;
+        overflow: hidden;
+        height: 700px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+        backdrop-filter: blur(10px);
+        background-color: var(--mud-palette-surface);
+        border: 1px solid var(--mud-palette-lines-inputs);
+    }
+    
+    .login-content {
+        flex: 1;
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+    
+    .login-sidebar {
+        flex: 1.2;
+        background-image: url('https://source.unsplash.com/random/1200x900/?warehouse,inventory,storage');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        position: relative;
+        display: none;
+    }
+    
+    .login-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, 
+            rgba(126, 111, 255, 0.9) 0%, 
+            rgba(255, 128, 171, 0.9) 100%);
+        opacity: 0.95;
+        transition: opacity 0.3s ease;
+    }
+    
+    .login-sidebar:hover .login-overlay {
+        opacity: 0.98;
+    }
+    
+    .login-sidebar-content {
+        position: relative;
+        z-index: 1;
+        color: white;
+        padding: 3rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .login-logo {
+        margin-bottom: 2.5rem;
+        text-align: center;
+    }
+    
+    .login-logo img {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);
+        padding: 1rem;
+        box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.2);
+    }
+    
+    .login-form {
+        width: 100%;
+    }
+    
+    .form-field {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-field .mud-input-control {
+        background-color: var(--mud-palette-surface);
+        border-radius: 8px;
+    }
+    
+    .form-field .mud-input-slot {
+        color: var(--mud-palette-text-secondary);
+    }
+    
+    .login-button {
+        height: 48px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .login-button:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(126, 111, 255, 0.3);
+    }
+    
+    .login-button:disabled {
+        background-color: var(--mud-palette-action-disabled);
+        color: var(--mud-palette-text-disabled);
+    }
+    
+    .login-button.loading {
+        opacity: 0.8;
+        cursor: progress;
+    }
+    
+    .remember-me {
+        color: var(--mud-palette-text-secondary);
+    }
+    
+    .help-link {
+        color: var(--mud-palette-primary);
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: color 0.2s ease;
+    }
+    
+    .help-link:hover {
+        color: var(--mud-palette-primary-darken);
+        text-decoration: underline;
+    }
+    
+    .social-login {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+    
+    .social-login .mud-icon-button {
+        border: 1px solid var(--mud-palette-divider);
+        transition: all 0.3s ease;
+    }
+    
+    .social-login .mud-icon-button:hover {
+        background-color: var(--mud-palette-action-hover);
+        transform: translateY(-2px);
+    }
+    
+    .mud-divider {
+        border-color: var(--mud-palette-divider);
+        margin: 1.5rem 0;
+    }
+    
+    .footer-text {
+        color: var(--mud-palette-text-secondary);
+        font-size: 0.875rem;
+    }
+    
+    .footer-link {
+        color: var(--mud-palette-primary);
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s ease;
+    }
+    
+    .footer-link:hover {
+        color: var(--mud-palette-primary-darken);
+        text-decoration: underline;
+    }
+    
+    /* Efecto de carga para el botón */
+    @@keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+    
+    .loading-spinner {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 0.8s ease-in-out infinite;
+        margin-right: 8px;
+    }
+    
+    .mud-checkbox-input {
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        cursor: pointer;
+    }
+    
+    .mud-checkbox-input:checked {
+        background-color: var(--mud-palette-primary);
+    }
+    
+    /* Efectos de hover en las tarjetas de características */
+    .feature-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    /* Responsive */
+    @@media (min-width: 600px) {
+        .login-paper {
+            border-radius: 16px;
+        }
+    }
+    
+    @@media (min-width: 960px) {
+        .login-sidebar {
+            display: block;
+        }
+        
+        .login-content {
+            padding: 4rem;
+        }
+    }
+    
+    @@media (max-width: 599px) {
+        .login-container {
+            padding: 0;
+        }
+        
+        .login-paper {
+            border-radius: 0;
+            height: 100vh;
+            max-width: 100%;
+        }
+        
+        .login-content {
+            padding: 2rem 1.5rem;
+        }
+    }
+</style>
+
+@code {
+    private MudForm _form;
+    private bool _isFormValid = false;
+    private Dictionary<string, string> _formErrors = new();
+    private bool _isLoading = false;
+    private string _errorMessage = string.Empty;
+    private bool _showPassword = false;
+    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+    
+    private readonly LoginModel _loginModel = new();
+    
+    private MudTheme _loginTheme = new MudTheme();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Verificar si el usuario ya está autenticado
+            var authState = await ((CustomAuthStateProvider)AuthStateProvider).GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                Navigation.NavigateTo("/");
+                return;
+            }
+
+            // Cargar credenciales guardadas si existen
+            var savedEmail = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "savedEmail");
+            if (!string.IsNullOrEmpty(savedEmail))
+            {
+                _loginModel.Email = savedEmail;
+                _loginModel.RememberMe = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al inicializar la página de inicio de sesión");
+            _errorMessage = "Error al cargar la configuración del usuario.";
+        }
+    }
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorMessage = string.Empty;
+            
+            // Validar el formulario
+            await _form.Validate();
+            if (!_isFormValid)
+            {
+                _isLoading = false;
+                return;
+            }
+
+            // Guardar el correo si la opción "Recordarme" está marcada
+            if (_loginModel.RememberMe)
+            {
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "savedEmail", _loginModel.Email);
+            }
+            else
+            {
+                await JSRuntime.InvokeVoidAsync("localStorage.removeItem", "savedEmail");
+            }
+
+            // Intentar autenticar al usuario
+            var result = await AuthService.LoginAsync(_loginModel);
+            
+            if (result.IsSuccess)
+            {
+                Snackbar.Add("Inicio de sesión exitoso", Severity.Success);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                _errorMessage = result.Message ?? "Error al iniciar sesión. Verifica tus credenciales.";
+                Snackbar.Add(_errorMessage, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Ocurrió un error al intentar iniciar sesión. Por favor, inténtalo de nuevo más tarde.";
+            Logger.LogError(ex, "Error al iniciar sesión");
+            Snackbar.Add(_errorMessage, Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        _showPassword = !_showPassword;
+        _passwordInputIcon = _showPassword ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && _isFormValid && !_isLoading)
+        {
+            await HandleLogin();
+        }
+    }
+
+    private void NavigateToRegister()
+    {
+        Navigation.NavigateTo("/register");
+    }
+
+    private void NavigateToForgotPassword()
+    {
+        Navigation.NavigateTo("/forgot-password");
+    }
+}

@@ -1,0 +1,420 @@
+@page "/register"
+@using MudBlazor
+@using MudBlazor.Components
+@using Inventario.Web.Models
+@using Inventario.Web.Services.Interfaces
+@using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
+@inject IAuthService AuthService
+@inject ISnackbar Snackbar
+@inject ILogger<Register> Logger
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Registro - Sistema de Inventario</PageTitle>
+
+<MudThemeProvider Theme="_registerTheme" IsDarkMode="true" />
+
+<div class="register-container">
+    <MudPaper Class="register-paper" Elevation="10">
+        <div class="register-content">
+            <!-- Logo y título -->
+            <div class="register-logo">
+                <MudAvatar Size="Size.Large" Class="mx-auto mb-3" Style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);">
+                    <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Size="Size.Large" Color="Color.Surface" />
+                </MudAvatar>
+                <MudText Typo="Typo.h4" Class="text-center mb-1" Style="font-weight: 600;">Crear una cuenta</MudText>
+                <MudText Class="text-center mb-4" Style="color: var(--mud-palette-text-secondary);">
+                    Completa el formulario para crear tu cuenta
+                </MudText>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_errorMessage))
+            {
+                <MudAlert Severity="Severity.Error" Class="mb-4">
+                    <MudText>@_errorMessage</MudText>
+                </MudAlert>
+            }
+
+            <!-- Formulario de registro -->
+            <MudForm @ref="_form" @bind-IsValid="_isFormValid" ValidationDelay="0" Class="register-form">
+                <div class="d-flex gap-3">
+                    <MudTextField 
+                        @bind-Value="_registerModel.FirstName" 
+                        Label="Nombres" 
+                        For="() => _registerModel.FirstName" 
+                        Variant="Variant.Outlined"
+                        Margin="Margin.Dense"
+                        Class="form-field"
+                        Required="true"
+                        Immediate="true" />
+                        
+                    <MudTextField 
+                        @bind-Value="_registerModel.LastName" 
+                        Label="Apellidos" 
+                        For="() => _registerModel.LastName" 
+                        Variant="Variant.Outlined"
+                        Margin="Margin.Dense"
+                        Class="form-field"
+                        Required="true"
+                        Immediate="true" />
+                </div>
+                
+                <MudTextField 
+                    @bind-Value="_registerModel.Email" 
+                    Label="Correo electrónico" 
+                    For="() => _registerModel.Email" 
+                    Variant="Variant.Outlined"
+                    Margin="Margin.Dense"
+                    AdornmentIcon="@Icons.Material.Filled.Email"
+                    Class="form-field"
+                    Required="true"
+                    Immediate="true" />
+                
+                <MudTextField 
+                    @bind-Value="_registerModel.Password"
+                    Label="Contraseña"
+                    For="() => _registerModel.Password"
+                    Variant="Variant.Outlined"
+                    Margin="Margin.Dense"
+                    Adornment="Adornment.End"
+                    AdornmentIcon="@_passwordInputIcon"
+                    AdornmentAriaLabel="Mostrar/ocultar contraseña"
+                    InputType="@_passwordInput"
+                    Class="form-field"
+                    Required="true"
+                    Immediate="true" />
+                
+                <MudTextField 
+                    @bind-Value="_registerModel.ConfirmPassword"
+                    Label="Confirmar contraseña"
+                    For="() => _registerModel.ConfirmPassword"
+                    Variant="Variant.Outlined"
+                    Margin="Margin.Dense"
+                    AdornmentIcon="@_confirmPasswordInputIcon"
+                    AdornmentAriaLabel="Mostrar/ocultar contraseña"
+                    InputType="@_confirmPasswordInput"
+                    Class="form-field"
+                    Required="true"
+                    Immediate="true" />
+                
+                <div class="d-flex gap-3">
+                    <MudTextField 
+                        @bind-Value="_registerModel.PhoneNumber" 
+                        Label="Teléfono (opcional)" 
+                        For="() => _registerModel.PhoneNumber" 
+                        Variant="Variant.Outlined"
+                        Margin="Margin.Dense"
+                        AdornmentIcon="@Icons.Material.Filled.Phone"
+                        Class="form-field"
+                        Immediate="true" />
+                        
+                    <MudTextField 
+                        @bind-Value="_registerModel.CompanyName" 
+                        Label="Empresa (opcional)" 
+                        For="() => _registerModel.CompanyName" 
+                        Variant="Variant.Outlined"
+                        Margin="Margin.Dense"
+                        AdornmentIcon="@Icons.Material.Filled.Business"
+                        Class="form-field"
+                        Immediate="true" />
+                </div>
+                
+                <div class="d-flex align-center mt-2 mb-3">
+                    <input type="checkbox" @bind="_registerModel.AcceptTerms" class="mud-checkbox-input" />
+                    <MudText Class="text-caption ml-2">
+                        Acepto los <MudLink Href="/terminos" Target="_blank" Class="text-primary">Términos de Servicio</MudLink> y la 
+                        <MudLink Href="/privacidad" Target="_blank" Class="text-primary">Política de Privacidad</MudLink>
+                    </MudText>
+                </div>
+                
+                <MudButton 
+                    FullWidth="true" 
+                    Variant="Variant.Filled" 
+                    Color="Color.Primary" 
+                    ButtonType="ButtonType.Submit" 
+                    Disabled="@(!_isFormValid || _isLoading)" 
+                    Class="@($"mt-2 mb-3 register-button {(_isLoading ? "loading" : "")}")"
+                    @onclick="HandleRegister">
+                    @if (_isLoading)
+                    {
+                        <MudProgressCircular Color="Color.Surface" Size="Size.Small" Class="mr-2" />
+                    }
+                    Crear cuenta
+                </MudButton>
+                
+                <div class="text-center mt-4">
+                    <MudText Class="text-caption">
+                        ¿Ya tienes una cuenta? 
+                        <MudLink Href="/login" Class="font-weight-bold">Iniciar sesión</MudLink>
+                    </MudText>
+                </div>
+            </MudForm>
+        </div>
+        
+        <!-- Lado derecho con imagen -->
+        <div class="register-sidebar">
+            <div class="register-overlay"></div>
+            <div class="register-sidebar-content">
+                <MudIcon Icon="@Icons.Material.Filled.Groups" Size="Size.Large" Class="mb-4" Style="font-size: 4rem;" />
+                <MudText Typo="Typo.h4" Class="mb-2">Únete a nuestra comunidad</MudText>
+                <MudText Class="mb-6">Comienza a gestionar tu inventario de manera eficiente</MudText>
+                <MudDivider Light="true" Class="my-4" />
+                <MudText Class="text-caption">© @DateTime.Now.Year Todos los derechos reservados</MudText>
+            </div>
+        </div>
+    </MudPaper>
+</div>
+
+<style>
+    .register-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background-color: var(--mud-palette-background);
+        padding: 1rem;
+        background-image: linear-gradient(135deg, var(--mud-palette-dark) 0%, var(--mud-palette-surface) 100%);
+    }
+    
+    .register-paper {
+        display: flex;
+        width: 100%;
+        max-width: 1200px;
+        border-radius: 16px;
+        overflow: hidden;
+        height: 800px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.36);
+        backdrop-filter: blur(10px);
+        background-color: var(--mud-palette-surface);
+        border: 1px solid var(--mud-palette-lines-inputs);
+    }
+    
+    .register-content {
+        flex: 1;
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        max-width: 600px;
+        margin: 0 auto;
+        overflow-y: auto;
+    }
+    
+    .register-sidebar {
+        flex: 1;
+        background-image: url('https://source.unsplash.com/random/800x800/?warehouse,inventory');
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        display: none;
+    }
+    
+    .register-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(126, 111, 255, 0.9) 0%, rgba(255, 128, 171, 0.9) 100%);
+        opacity: 0.95;
+    }
+    
+    .register-sidebar-content {
+        position: relative;
+        z-index: 1;
+        color: white;
+        padding: 3rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .register-logo {
+        margin-bottom: 2.5rem;
+        text-align: center;
+    }
+    
+    .register-form {
+        width: 100%;
+    }
+    
+    .form-field {
+        margin-bottom: 1.5rem;
+    }
+    
+    .register-button {
+        height: 48px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .register-button:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(126, 111, 255, 0.3);
+    }
+    
+    .register-button:disabled {
+        background-color: var(--mud-palette-action-disabled);
+        color: var(--mud-palette-text-disabled);
+    }
+    
+    .register-button.loading {
+        opacity: 0.8;
+        cursor: progress;
+    }
+    
+    @@media (min-width: 1280px) {
+        .register-sidebar {
+            display: block;
+        }
+        
+        .register-content {
+            padding: 4rem;
+        }
+    }
+    
+    @@media (max-width: 599px) {
+        .register-container {
+            padding: 0;
+        }
+        
+        .register-paper {
+            border-radius: 0;
+            height: 100vh;
+            max-width: 100%;
+        }
+        
+        .register-content {
+            padding: 2rem 1.5rem;
+        }
+    }
+</style>
+
+@code {
+    private MudForm _form;
+    private bool _isFormValid = false;
+    private Dictionary<string, string> _formErrors = new();
+    private bool _isLoading = false;
+    private string _errorMessage = string.Empty;
+    private bool _showPassword = false;
+    private bool _showConfirmPassword = false;
+    private InputType _passwordInput = InputType.Password;
+    private InputType _confirmPasswordInput = InputType.Password;
+    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+    private string _confirmPasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+    
+    private RegisterModel _registerModel = new();
+    
+    private MudTheme _registerTheme = new MudTheme();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Verificar si el usuario ya está autenticado
+            var authState = await ((CustomAuthStateProvider)AuthStateProvider).GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (user.Identity?.IsAuthenticated == true)
+            {
+                Navigation.NavigateTo("/");
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error al inicializar la página de registro");
+            _errorMessage = "Error al cargar la configuración del usuario.";
+        }
+    }
+
+    private async Task HandleRegister()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorMessage = string.Empty;
+            
+            // Validar el formulario
+            await _form.Validate();
+            if (!_isFormValid)
+            {
+                _isLoading = false;
+                return;
+            }
+
+            // Validar que las contraseñas coincidan
+            if (_registerModel.Password != _registerModel.ConfirmPassword)
+            {
+                _errorMessage = "Las contraseñas no coinciden.";
+                _isLoading = false;
+                return;
+            }
+
+            // Validar términos y condiciones
+            if (!_registerModel.AcceptTerms)
+            {
+                _errorMessage = "Debes aceptar los términos y condiciones para continuar.";
+                _isLoading = false;
+                return;
+            }
+
+            // Intentar registrar al usuario
+            var result = await AuthService.RegisterAsync(_registerModel);
+            
+            if (result.IsSuccess)
+            {
+                Snackbar.Add(result.Message ?? "¡Registro exitoso! Redirigiendo...", Severity.Success);
+                
+                // Redirigir al dashboard después de un breve retraso
+                await Task.Delay(2000);
+                Navigation.NavigateTo("/");
+            }
+            else
+            {
+                _errorMessage = result.Message ?? "Error al registrar el usuario. Por favor, inténtalo de nuevo.";
+                Snackbar.Add(_errorMessage, Severity.Error);
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = "Ocurrió un error al procesar el registro. Por favor, inténtalo de nuevo más tarde.";
+            Logger.LogError(ex, "Error en el registro de usuario");
+            Snackbar.Add(_errorMessage, Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void TogglePasswordVisibility()
+    {
+        _showPassword = !_showPassword;
+        _passwordInput = _showPassword ? InputType.Text : InputType.Password;
+        _passwordInputIcon = _showPassword ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+    }
+    
+    private void ToggleConfirmPasswordVisibility()
+    {
+        _showConfirmPassword = !_showConfirmPassword;
+        _confirmPasswordInput = _showConfirmPassword ? InputType.Text : InputType.Password;
+        _confirmPasswordInputIcon = _showConfirmPassword ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
+    }
+
+    private async Task HandleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && _isFormValid && !_isLoading)
+        {
+            await HandleRegister();
+        }
+    }
+}

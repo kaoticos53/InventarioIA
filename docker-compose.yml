@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # SQL Server
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    container_name: inventario-db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Developer
+      - MSSQL_COLLATION=SQL_Latin1_General_CP1_CI_AS
+      - MSSQL_LCID=1033
+      - MSSQL_MEMORY_LIMIT_MB=2048
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - inventario-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      retries: 10
+      start_period: 10s
+      timeout: 3s
+
+  # API de Inventario
+  api:
+    build:
+      context: .
+      dockerfile: Inventario.Api/Dockerfile
+    container_name: inventario-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ASPNETCORE_DETAILEDERRORS=true
+      - ConnectionStrings__DefaultConnection=Server=db;Database=InventarioDB;User=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;MultipleActiveResultSets=true;ConnectRetryCount=20;ConnectRetryInterval=15;Connection Timeout=120;Encrypt=False
+      - JwtSettings__Secret=YourJwtSecretKey12345678901234567890
+      - JwtSettings__TokenLifetimeMinutes=1440
+      - JwtSettings__RefreshTokenLifetimeDays=7
+      - CORS__AllowedOrigins=http://localhost:8080,http://localhost:5000,http://localhost:5001,http://web:80,*
+    ports:
+      - "5001:80"
+    depends_on:
+      - db
+      - redis
+    networks:
+      - inventario-network
+    restart: unless-stopped
+    volumes:
+      - ./Inventario.Api/appsettings.json:/app/appsettings.json
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Aplicación Web
+  web:
+    build:
+      context: .
+      dockerfile: Inventario.Web/Dockerfile
+    container_name: inventario-web
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ApiUrl=http://api:80
+    depends_on:
+      - api
+    networks:
+      - inventario-network
+    restart: unless-stopped
+    volumes:
+      - ./Inventario.Web/wwwroot:/usr/share/nginx/html
+
+  # Redis para caché (opcional)
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - inventario-network
+    restart: unless-stopped
+
+networks:
+  inventario-network:
+    driver: bridge
+
+volumes:
+  mssql-data:
+
+

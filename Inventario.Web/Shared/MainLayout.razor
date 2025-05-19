@@ -1,0 +1,162 @@
+@inherits LayoutComponentBase
+@using MudBlazor
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+<MudThemeProvider Theme="_currentTheme" IsDarkMode="true" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    @{
+        var currentPath = Navigation.Uri.Replace(Navigation.BaseUri, "/");
+        var isPublicPage = currentPath == "/login" || 
+                         currentPath == "/register" || 
+                         currentPath == "/forgot-password" ||
+                         currentPath == "/reset-password" ||
+                         currentPath == "/verify-email";
+    }
+    
+    @if (!isPublicPage)
+    {
+        <MudAppBar Elevation="1" Color="Color.Inherit" Class="app-bar">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => _drawerOpen = !_drawerOpen)" />
+            <MudText Typo="Typo.h6" Class="ml-2">Sistema de Inventario</MudText>
+            <MudSpacer />
+            
+            @if (_isAuthenticated)
+            {
+                <MudMenu Dense="true">
+                    <ActivatorContent>
+                        <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" />
+                    </ActivatorContent>
+                    <ChildContent>
+                        <MudMenuItem Href="/perfil" Icon="@Icons.Material.Filled.Person">Perfil</MudMenuItem>
+                        <MudDivider />
+                        <MudMenuItem OnClick="@(async () => await Logout())" Icon="@Icons.Material.Filled.ExitToApp">Cerrar sesión</MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+            }
+        </MudAppBar>
+
+        <MudDrawer @bind-Open="_drawerOpen" Elevation="1" Class="sidebar-drawer">
+            <MudDrawerHeader>
+                <MudAvatar Color="Color.Primary" Size="Size.Large" Class="mx-auto mb-2">
+                    <MudIcon Icon="@Icons.Material.Filled.Store" Size="Size.Large" />
+                </MudAvatar>
+                <MudText Typo="Typo.h6" Class="text-center">Inventario</MudText>
+                <MudText Typo="Typo.caption" Class="text-center text-muted">v1.0.0</MudText>
+            </MudDrawerHeader>
+            
+            <MudNavMenu>
+                <MudNavLink Href="/" Icon="@Icons.Material.Filled.Dashboard" Match="NavLinkMatch.All">Inicio</MudNavLink>
+                
+                <MudNavGroup Title="Gestión" Icon="@Icons.Material.Filled.Storage">
+                    <MudNavLink Href="/productos" Icon="@Icons.Material.Filled.Inventory2">Productos</MudNavLink>
+                    <MudNavLink Href="/categorias" Icon="@Icons.Material.Filled.Category">Categorías</MudNavLink>
+                    <MudNavLink Href="/proveedores" Icon="@Icons.Material.Filled.LocalShipping">Proveedores</MudNavLink>
+                </MudNavGroup>
+                
+                <MudNavGroup Title="Operaciones" Icon="@Icons.Material.Filled.SwapHoriz">
+                    <MudNavLink Href="/entradas" Icon="@Icons.Material.Filled.Input">Entradas</MudNavLink>
+                    <MudNavLink Href="/salidas" Icon="@Icons.Material.Filled.Output">Salidas</MudNavLink>
+                    <MudNavLink Href="/traslados" Icon="@Icons.Material.Filled.SwapHoriz">Traslados</MudNavLink>
+                </MudNavGroup>
+                
+                @if (_isAdmin)
+                {
+                    <MudDivider Class="my-3" />
+                    <MudNavGroup Title="Administración" Icon="@Icons.Material.Filled.AdminPanelSettings">
+                        <MudNavLink Href="/usuarios" Icon="@Icons.Material.Filled.People">Usuarios</MudNavLink>
+                        <MudNavLink Href="/roles" Icon="@Icons.Material.Filled.Lock">Roles</MudNavLink>
+                        <MudNavLink Href="/auditoria" Icon="@Icons.Material.Filled.History">Auditoría</MudNavLink>
+                        <MudNavLink Href="/configuracion" Icon="@Icons.Material.Filled.Settings">Configuración</MudNavLink>
+                    </MudNavGroup>
+                }
+            </MudNavMenu>
+            
+            <MudDivider Class="my-2" />
+            
+            <div class="pa-4">
+                <MudButton Variant="Variant.Text" 
+                          Color="Color.Primary" 
+                          OnClick="ToggleTheme"
+                          StartIcon="@Icons.Material.Filled.LightMode"
+                          EndIcon="@Icons.Material.Filled.DarkMode">
+                    @(_isDarkMode ? "Modo oscuro" : "Modo claro")
+                </MudButton>
+            </div>
+        </MudDrawer>
+    }
+
+    <MudMainContent Class="main-content">
+        <MudContainer MaxWidth="MaxWidth.False" Class="pa-0">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private bool _drawerOpen = true;
+    private bool _isDarkMode = true;
+    private bool _isAuthenticated = false;
+    private bool _isAdmin = false;
+    
+    private MudTheme _currentTheme = new();
+    
+    [Inject] private NavigationManager Navigation { get; set; }
+    
+    [CascadingParameter]
+    private Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateTask;
+        _isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+        _isAdmin = _isAuthenticated && authState.User.IsInRole("Administrador");
+        
+        // Cargar el tema guardado o usar el predeterminado
+        _isDarkMode = true; // Por defecto tema oscuro
+        _currentTheme = new MudTheme(); // Tema por defecto de MudBlazor
+        
+        // Verificar si estamos en una ruta pública
+        var currentPath = Navigation.Uri.Replace(Navigation.BaseUri, "/");
+        var isPublicPage = currentPath == "/login" || 
+                         currentPath == "/register" || 
+                         currentPath == "/forgot-password" ||
+                         currentPath == "/reset-password" ||
+                         currentPath == "/verify-email";
+        
+        // Si no está autenticado y no está en una página pública, redirigir al login
+        if (!_isAuthenticated && !isPublicPage)
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+    
+    private void ToggleTheme()
+    {
+        _isDarkMode = !_isDarkMode;
+        // Actualizar el tema basado en el modo oscuro/claro
+        _currentTheme = new MudTheme();
+        // Aquí podrías guardar la preferencia del tema
+    }
+
+    private void OnDarkModeChanged(bool value)
+    {
+        _isDarkMode = value;
+        // Actualizar el tema basado en el modo oscuro/claro
+        _currentTheme = new MudTheme();
+        // Aquí podrías guardar la preferencia del tema
+        // Por ejemplo, usando el almacenamiento local
+    }
+    
+    private async Task Logout()
+    {
+        // Lógica para cerrar sesión
+        _isAuthenticated = false;
+        // Aquí podrías limpiar cualquier dato de autenticación
+        await Task.Delay(1); // Para evitar advertencias de método asíncrono
+        Navigation.NavigateTo("/login");
+    }
+}

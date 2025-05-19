@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Confirma tu correo electrónico - {{AppName}}</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #eee; }
+        .content { padding: 20px 0; }
+        .button {
+            display: inline-block; 
+            padding: 12px 24px; 
+            background-color: #4CAF50; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            margin: 20px 0;
+        }
+        .footer { 
+            margin-top: 30px; 
+            padding-top: 20px; 
+            border-top: 1px solid #eee; 
+            font-size: 12px; 
+            color: #777; 
+            text-align: center; 
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Bienvenido a {{AppName}}</h1>
+    </div>
+    
+    <div class="content">
+        <p>Hola {{UserName}},</p>
+        
+        <p>Gracias por registrarte en {{AppName}}. Para completar tu registro, por favor confirma tu dirección de correo electrónico haciendo clic en el siguiente botón:</p>
+        
+        <p style="text-align: center;">
+            <a href="{{ConfirmationLink}}" class="button">Confirmar correo electrónico</a>
+        </p>
+        
+        <p>Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:</p>
+        <p style="word-break: break-all;">{{ConfirmationLink}}</p>
+        
+        <p>Si no creaste una cuenta con nosotros, por favor ignora este correo.</p>
+        
+        <p>Saludos,<br>El equipo de {{AppName}}</p>
+    </div>
+    
+    <div class="footer">
+        <p>© {{Year}} {{AppName}}. Todos los derechos reservados.</p>
+        <p>Si tienes alguna pregunta, contáctanos en <a href="mailto:{{SupportEmail}}">{{SupportEmail}}</a></p>
+    </div>
+    
+    <script>
+        // Añadir el año actual dinámicamente
+        document.addEventListener('DOMContentLoaded', function() {
+            var yearElements = document.getElementsByClassName('year');
+            var currentYear = new Date().getFullYear();
+            for (var i = 0; i < yearElements.length; i++) {
+                yearElements[i].textContent = currentYear;
+            }
+        });
+    </script>
+</body>
+</html>

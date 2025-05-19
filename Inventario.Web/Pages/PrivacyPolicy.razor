@@ -1,0 +1,125 @@
+@page "/privacidad"
+@using MudBlazor
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Política de Privacidad - Sistema de Inventario</PageTitle>
+
+<MudThemeProvider Theme="_privacyTheme" IsDarkMode="true" />
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="my-8">
+    <MudPaper Class="pa-8" Elevation="0" Style="background-color: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-inputs); border-radius: 8px;">
+        <!-- Encabezado -->
+        <div class="text-center mb-8">
+            <MudAvatar Size="Size.Large" Class="mx-auto mb-3" Style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);">
+                <MudIcon Icon="@Icons.Material.Filled.PrivacyTip" Size="Size.Large" Color="Color.Surface" />
+            </MudAvatar>
+            <MudText Typo="Typo.h3" Class="mb-2">Política de Privacidad</MudText>
+            <MudText Class="text-secondary" Style="opacity: 0.8;">Última actualización: @DateTime.Now.ToString("dd/MM/yyyy")</MudText>
+        </div>
+
+        <!-- Contenido de la Política de Privacidad -->
+        <div class="privacy-content">
+            <MudText Class="mb-6">
+                En Inventario, valoramos y respetamos su privacidad. Esta Política de Privacidad explica cómo recopilamos, utilizamos, divulgamos y protegemos su información personal cuando utiliza nuestro Servicio.
+            </MudText>
+
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">1. Información que Recopilamos</MudText>
+            <MudText Class="mb-4">
+                Recopilamos varios tipos de información, incluyendo:
+            </MudText>
+            <ul class="mb-4">
+                <li><strong>Información de la Cuenta:</strong> nombre, dirección de correo electrónico, número de teléfono, etc.</li>
+                <li><strong>Datos de Uso:</strong> cómo interactúa con nuestro Servicio, páginas visitadas, duración de la visita, etc.</li>
+                <li><strong>Datos del Dispositivo:</strong> dirección IP, tipo de navegador, versión, páginas de nuestro Servicio que visita, etc.</li>
+            </ul>
+
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">2. Uso de la Información</MudText>
+            <MudText Class="mb-4">
+                Utilizamos la información recopilada para diversos fines, incluyendo:
+            </MudText>
+            <ul class="mb-4">
+                <li>Proporcionar y mantener nuestro Servicio</li>
+                <li>Notificarle sobre cambios en nuestro Servicio</li>
+                <li>Permitirle participar en funciones interactivas de nuestro Servicio</li>
+                <li>Proporcionar análisis o información valiosa para mejorar el Servicio</li>
+                <li>Monitorear el uso del Servicio</li>
+                <li>Detectar, prevenir y abordar problemas técnicos</li>
+            </ul>
+
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">3. Compartir Información</MudText>
+            <MudText Class="mb-4">
+                No vendemos ni alquilamos su información personal a terceros. Sin embargo, podemos compartir su información en las siguientes situaciones:
+            </MudText>
+            <ul class="mb-4">
+                <li>Con proveedores de servicios que nos ayudan a operar nuestro negocio</li>
+                <li>Para cumplir con obligaciones legales</li>
+                <li>Para proteger y defender nuestros derechos o propiedad</li>
+                <li>Para prevenir o investigar posibles delitos en relación con el Servicio</li>
+            </ul>
+
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">4. Seguridad de los Datos</MudText>
+            <MudText Class="mb-4">
+                La seguridad de sus datos es importante para nosotros, pero recuerde que ningún método de transmisión por Internet o método de almacenamiento electrónico es 100% seguro. Implementamos medidas de seguridad técnicas y organizativas para proteger sus datos personales, pero no podemos garantizar su seguridad absoluta.
+            </MudText>
+
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">5. Sus Derechos de Protección de Datos</MudText>
+            <MudText Class="mb-4">
+                Dependiendo de su ubicación, puede tener ciertos derechos con respecto a su información personal, que pueden incluir:
+            </MudText>
+            <ul class="mb-4">
+                <li>El derecho a acceder, actualizar o eliminar la información que tenemos sobre usted</li>
+                <li>El derecho a rectificar información inexacta o incompleta</li>
+                <li>El derecho a oponerse a nuestro procesamiento de sus datos personales</li>
+                <li>El derecho a solicitar la restricción del procesamiento de su información personal</li>
+                <li>El derecho a la portabilidad de datos</li>
+                <li>El derecho a retirar su consentimiento</li>
+            </ul>
+
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">6. Cookies y Tecnologías Similares</MudText>
+            <MudText Class="mb-4">
+                Utilizamos cookies y tecnologías de seguimiento similares para rastrear la actividad en nuestro Servicio y mantener cierta información. Puede configurar su navegador para que rechace todas las cookies o para indicar cuándo se está enviando una cookie. Sin embargo, si no acepta cookies, es posible que no pueda utilizar algunas partes de nuestro Servicio.
+            </MudText>
+
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">7. Cambios a esta Política de Privacidad</MudText>
+            <MudText Class="mb-6">
+                Podemos actualizar nuestra Política de Privacidad periódicamente. Le notificaremos de cualquier cambio publicando la nueva Política de Privacidad en esta página y actualizando la fecha de "Última actualización" en la parte superior. Se le notificará por correo electrónico y/o un aviso destacado en nuestro Servicio antes de que el cambio entre en vigor.
+            </MudText>
+
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">8. Contáctenos</MudText>
+            <MudText Class="mb-6">
+                Si tiene alguna pregunta sobre esta Política de Privacidad, puede contactarnos:
+                <div class="mt-2">
+                    <MudText>Por correo electrónico: privacidad@inventario.com</MudText>
+                    <MudText>Visitando esta página en nuestro sitio web: www.inventario.com/contacto</MudText>
+                </div>
+            </MudText>
+
+            <div class="text-center mt-8">
+                <MudButton 
+                    Variant="Variant.Outlined" 
+                    Color="Color.Primary" 
+                    StartIcon="@Icons.Material.Filled.ArrowBack"
+                    OnClick="@(() => Navigation.NavigateTo("/"))">
+                    Volver al inicio
+                </MudButton>
+            </div>
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudTheme _privacyTheme = new MudTheme();
+
+    protected override void OnInitialized()
+    {
+        // Agregar clase al body para el estilo de la página
+        JSRuntime.InvokeVoidAsync("document.body.classList.add", "privacy-page");
+    }
+    
+    public void Dispose()
+    {
+        // Remover clase del body al salir de la página
+        JSRuntime.InvokeVoidAsync("document.body.classList.remove", "privacy-page");
+    }
+}

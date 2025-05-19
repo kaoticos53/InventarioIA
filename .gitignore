@@ -1,0 +1,171 @@
+# .NET Core
+bin/
+obj/
+.vs/
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# User-specific files
+*.user
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+msbuild.log
+msbuild.err
+msbuild.wrn
+
+# Visual Studio
+*.suo
+*.user
+*.userprefs
+*.vspscc
+*.vssscc
+*.sln.ide
+_ReSharper*/
+*.sln.docstates
+
+# Packages
+*.nupkg
+*.nupkg.*
+packages/
+
+# Local development
+appsettings.Development.json
+appsettings.Local.json
+
+# SQL Server files
+*.mdf
+*.ldf
+*.ndf
+
+# Rider
+.idea/
+*.sln.iml
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Local development cache
+.npm
+.temp
+
+# Azure Functions
+local.settings.json
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+[Dd]esktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# VS Code files for web projects (Blazor, etc.)
+wwwroot/lib/
+
+# Build results for web projects
+*.pdb
+*.publish
+
+# NuGet
+packages/
+*.nupkg
+nuget.exe
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Local development cache (npm, bower, etc.)
+node_modules/
+bower_components/
+
+# Visual Studio 2017 auto generated files
+Generated\ Files/
+
+# Visual Studio 2017
+.vs/
+
+# Visual Studio 2019
+.vs/
+
+# Visual Studio 2022
+.vs/
+
+# Visual Studio Code
+.vscode/
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# CodeRush
+.cr/
+
+# Python Tools for Visual Studio (PTVS)
+__pycache__/
+*.pyc
+
+# Cake - Uncomment if you are using it
+# tools/**
+# !tools/packages.config
+
+# Tabs Studio
+*.tss
+
+# Telerik's JustMock configuration file
+*.jmconfig
+
+# BizTalk build output
+*.btp.cs
+*.btm.cs
+*.odx.cs
+*.xsd.cs
+
+# OpenCover UI analysis results
+OpenCover/
+
+# Azure Stream Analytics local run output
+ASALocalRun/
+
+# MSBuild Binary and Structured Log
+*.binlog
+
+# NVidia Nsight GPU debugger configuration file
+*.nvuser
+
+# MFractors (Xamarin productivity tool) working folder
+.mfractor/
+
+# Local History for Visual Studio
+.localhistory/
+
+# BeatPulse healthcheck temp database
+healthchecksdb
+
+# Backup folder for Package Reference Convert tool in Visual Studio 2017
+MigrationBackup/
+
+# Ionide (cross platform F# VS Code tools) working folder
+.ionide/
+
+# Fody - auto-generated XML schema
+FodyWeavers.xsd

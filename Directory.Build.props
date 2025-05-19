@@ -1,0 +1,81 @@
+<Project>
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1605;NU1603</NoWarn>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    
+    <!-- Versiones de paquetes comunes -->
+    <AspNetCoreVersion>9.0.0</AspNetCoreVersion>
+    <EfCoreVersion>9.0.0</EfCoreVersion>
+    <ExtensionsVersion>9.0.0</ExtensionsVersion>
+    <SystemIdentityModelTokensJwtVersion>9.0.0</SystemIdentityModelTokensJwtVersion>
+    <SwashbuckleVersion>7.0.0</SwashbuckleVersion>
+    
+    <!-- Configuración de paquetes -->
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <EnablePackageVersionOverride>true</EnablePackageVersionOverride>
+    
+    <!-- Forzar versiones específicas de paquetes -->
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    
+    <!-- Configuración de restauración de paquetes -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RestoreLockedMode>false</RestoreLockedMode>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <!-- Paquetes de Microsoft.AspNetCore -->
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(AspNetCoreVersion)" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="$(AspNetCoreVersion)" />
+    
+    <!-- Paquetes de Microsoft.EntityFrameworkCore -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="$(EfCoreVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="$(EfCoreVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="$(EfCoreVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(EfCoreVersion)" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="$(EfCoreVersion)">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageVersion>
+    
+    <!-- Paquetes de Microsoft.Extensions -->
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Identity.Core" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Identity.Stores" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="$(ExtensionsVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(ExtensionsVersion)" />
+    
+    <!-- Otros paquetes -->
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="$(SystemIdentityModelTokensJwtVersion)" />
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="$(SwashbuckleVersion)" />
+    <PackageVersion Include="AspNetCore.HealthChecks.SqlServer" Version="9.0.0" />
+    <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
+    <PackageVersion Include="System.Net.Http.Json" Version="9.0.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <!-- Configuración de paquetes de terceros -->
+    <PackageVersion Include="AutoMapper" Version="13.0.1" />
+    <PackageVersion Include="Blazored.LocalStorage" Version="5.0.1" />
+    <PackageVersion Include="MudBlazor" Version="8.0.0" />
+    <PackageVersion Include="MudBlazor.Markdown" Version="8.0.0" />
+    <PackageVersion Include="MailKit" Version="4.5.0" />
+    <PackageVersion Include="SendGrid" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.0.0" />
+  </ItemGroup>
+</Project>

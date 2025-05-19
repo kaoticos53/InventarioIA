@@ -1,0 +1,239 @@
+@page "/admin/settings"
+@using Inventario.Core.Interfaces
+@using Inventario.Core.Models
+@using MudBlazor
+@using Inventario.Web.Services
+@inject IAppSettingsService AppSettingsService
+@inject AppRuntimeContext AppRuntime
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" Class="mb-4">Configuración de la Aplicación</MudText>
+
+@if (_isLoading)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-4" />
+}
+else if (_settings != null)
+{
+    <MudForm @ref="_form" @bind-IsValid="_isFormValid" @bind-Errors="_formErrors" ValidationDelay="0">
+        <MudCard Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Información General</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" sm="6" Class="pa-4">
+                        <MudTextField @bind-Value="_settings.AppName" 
+                                   Label="Nombre de la Aplicación" 
+                                   Required="true" 
+                                   RequiredError="El nombre es requerido" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" Class="pa-4">
+                        <MudTextField @bind-Value="_settings.Tagline" 
+                                   Label="Eslogan o Lema" 
+                                   HelperText="Un lema corto que describa su aplicación" />
+                    </MudItem>
+                    <MudItem xs="12" Class="pa-4">
+                        <MudTextField @bind-Value="_settings.Description" 
+                                   Label="Descripción" 
+                                   Lines="3" 
+                                   Variant="Variant.Outlined" />
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+
+        <MudCard Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Información de Contacto</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" sm="6" Class="pa-4">
+                        <MudTextField @bind-Value="_settings.CompanyName" 
+                                   Label="Nombre de la Empresa" 
+                                   Required="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" Class="pa-4">
+                        <MudTextField @bind-Value="_settings.SupportEmail" 
+                                   Label="Correo de Soporte" 
+                                   Required="true" 
+                                   InputType="InputType.Email" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" Class="pa-4">
+                        <MudTextField @bind-Value="_settings.SupportPhone" 
+                                   Label="Teléfono de Soporte" 
+                                   InputType="InputType.Text" />
+                    </MudItem>
+                    <MudItem xs="12" Class="pa-4">
+                        <MudTextField @bind-Value="_settings.CompanyAddress" 
+                                   Label="Dirección" 
+                                   Lines="2" 
+                                   Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" Class="pa-4">
+                        <MudTextField @bind-Value="_settings.WebsiteUrl" 
+                                   Label="Sitio Web" 
+                                   InputType="InputType.Url" 
+                                   Adornment="Adornment.Start" 
+                                   AdornmentIcon="@Icons.Material.Filled.Public" />
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+
+        <MudCard Class="mb-4">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Apariencia</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" sm="6" Class="pa-4">
+                        <MudTextField @bind-Value="_settings.PrimaryColor" 
+                                     Label="Color Primario" 
+                                     Variant="Variant.Outlined"
+                                     HelperText="Formato hexadecimal (ej: #4a6cf7)" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" Class="pa-4">
+                        <MudTextField @bind-Value="_settings.SecondaryColor" 
+                                     Label="Color Secundario" 
+                                     Variant="Variant.Outlined"
+                                     HelperText="Formato hexadecimal (ej: #6c5ce7)" />
+                    </MudItem>
+                    <MudItem xs="12" Class="pa-4">
+                        <MudTextField @bind-Value="_settings.LogoUrl" 
+                                   Label="URL del Logo" 
+                                   HelperText="URL de la imagen del logo" 
+                                   Adornment="Adornment.Start" 
+                                   AdornmentIcon="@Icons.Material.Filled.Image" />
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+
+        <div class="d-flex justify-end mt-4">
+            <MudButton Variant="Variant.Text" 
+                      Color="Color.Default" 
+                      Class="mr-2" 
+                      OnClick="@(async () => await ResetForm())">
+                Restablecer
+            </MudButton>
+            <MudButton Variant="Variant.Filled" 
+                      Color="Color.Primary" 
+                      EndIcon="@Icons.Material.Filled.Save" 
+                      OnClick="@(async () => await SaveSettings())"
+                      Disabled="!_isFormValid || _isSaving">
+                @(_isSaving ? "Guardando..." : "Guardar Cambios")
+            </MudButton>
+        </div>
+    </MudForm>
+}
+
+@code {
+    private Inventario.Core.Models.AppSettings _settings = new Inventario.Core.Models.AppSettings();
+    private bool _isLoading = true;
+    private bool _isSaving = false;
+    private bool _isFormValid = true;
+    private string[] _formErrors = Array.Empty<string>();
+    private MudForm _form;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadSettings();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar la configuración: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task LoadSettings()
+    {
+        _isLoading = true;
+        StateHasChanged();
+
+        try
+        {
+            var settings = await AppSettingsService.GetAppSettingsAsync();
+            if (settings == null)
+            {
+                _settings = new Inventario.Core.Models.AppSettings();
+            }
+            else
+            {
+                _settings = settings;
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al cargar la configuración: {ex.Message}", Severity.Error);
+            _settings = new Inventario.Core.Models.AppSettings();
+        }
+        finally
+        {
+            _isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveSettings()
+    {
+        if (!_form.IsValid)
+            return;
+
+        _isSaving = true;
+        StateHasChanged();
+
+        try
+        {
+            // Actualizar la configuración en la base de datos
+            var settingsToUpdate = _settings as Inventario.Core.Models.AppSettings;
+            var result = await AppSettingsService.UpdateAppSettingsAsync(settingsToUpdate, "admin");
+            
+            if (result != null)
+            {
+                // Actualizar el contexto de tiempo de ejecución
+                await AppRuntime.RefreshSettingsAsync();
+                
+                Snackbar.Add("Configuración guardada exitosamente.", Severity.Success);
+                
+                // Recargar la configuración para asegurar que tenemos los últimos cambios
+                await LoadSettings();
+            }
+            else
+            {
+                Snackbar.Add("Error al guardar la configuración.", Severity.Error);
+            }
+            Navigation.NavigateTo("/admin/settings", true);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error al guardar la configuración: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _isSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ResetForm()
+    {
+        await LoadSettings();
+        // Reiniciar manualmente los valores del formulario
+        StateHasChanged();
+    }
+}

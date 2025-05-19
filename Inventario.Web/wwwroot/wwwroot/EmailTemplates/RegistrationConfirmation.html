@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirma tu registro - {{appName}}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, {{primaryColor}}, {{secondaryColor}});
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .button {
+            display: inline-block;
+            background: {{primaryColor}};
+            color: white !important;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .button:hover {
+            background: {{secondaryColor}};
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+            transition: all 0.3s ease;
+        }
+        .footer {
+            background: #f5f5f5;
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+        .divider {
+            border-top: 1px solid #e0e0e0;
+            margin: 25px 0;
+            position: relative;
+            text-align: center;
+        }
+        .divider-text {
+            background: #ffffff;
+            padding: 0 15px;
+            position: relative;
+            top: -12px;
+            color: #777;
+            font-size: 14px;
+        }
+        .code-box {
+            background: #f8f9fa;
+            border-left: 4px solid {{primaryColor}};
+            padding: 10px 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        .expiry-note {
+            background: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header" style="text-align: center; padding: 30px 20px; color: white;">
+            <h1 style="margin: 0 0 10px 0; font-size: 28px; color: white;">{{appName}}</h1>
+            <p style="margin: 0 0 20px 0; font-size: 16px; color: rgba(255, 255, 255, 0.9);">{{tagline}}</p>
+            <h2 style="margin: 0; font-size: 22px; color: white;">¡Bienvenido a nuestra comunidad!</h2>
+        </div>
+        <div class='content'>
+            <p>Hola {{userName}},</p>
+            <p>Gracias por registrarte en <strong>{{appName}}</strong>. Estamos encantados de tenerte con nosotros.</p>
+            
+            <p>Para completar tu registro, por favor confirma tu dirección de correo electrónico haciendo clic en el siguiente botón:</p>
+            
+            <div style='text-align: center; margin: 30px 0;'>
+                <a href='{{confirmationLink}}' class='button'>Confirmar mi correo electrónico</a>
+            </div>
+            
+            <div class='expiry-note'>
+                <strong>Importante:</strong> Este enlace expirará en 24 horas por motivos de seguridad.
+            </div>
+            
+            <div class='divider'><span class='divider-text'>o</span></div>
+            
+            <p>Si el botón no funciona, copia y pega el siguiente enlace en tu navegador:</p>
+            <div class='code-box'>
+                {{confirmationLink}}
+            </div>
+            
+            <p>Si no has creado una cuenta en {{appName}}, puedes ignorar este mensaje con seguridad.</p>
+            
+            <p>¿Necesitas ayuda? <a href='mailto:{{supportEmail}}' style='color: {{primaryColor}};'>Contáctanos</a> y estaremos encantados de ayudarte.</p>
+            
+            <p>Saludos,<br>El equipo de <strong>{{companyName}}</strong></p>
+        </div>
+        <div class="footer" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #666; font-size: 12px; line-height: 1.5;">
+            <p>© {{year}} {{companyName}}. Todos los derechos reservados.</p>
+            <p><small>Este es un correo automático, por favor no respondas a este mensaje.</small></p>
+            <p><small>Si tienes alguna pregunta, por favor contacta a <a href="mailto:{{supportEmail}}" style="color: {{primaryColor}}; text-decoration: none;">{{supportEmail}}</a></small></p>
+            <p><small><a href="{{websiteUrl}}" style="color: {{primaryColor}}; text-decoration: none;">{{websiteUrl}}</a></small></p>
+        </div>
+    </div>
+</body>
+</html>

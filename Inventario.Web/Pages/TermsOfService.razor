@@ -1,0 +1,85 @@
+@page "/terminos"
+@using MudBlazor
+@using Microsoft.JSInterop
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Términos de Servicio - Sistema de Inventario</PageTitle>
+
+<MudThemeProvider Theme="_termsTheme" IsDarkMode="true" />
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="my-8">
+    <MudPaper Class="pa-8" Elevation="0" Style="background-color: var(--mud-palette-surface); border: 1px solid var(--mud-palette-lines-inputs); border-radius: 8px;">
+        <!-- Encabezado -->
+        <div class="text-center mb-8">
+            <MudAvatar Size="Size.Large" Class="mx-auto mb-3" Style="background: linear-gradient(135deg, var(--mud-palette-primary) 0%, var(--mud-palette-secondary) 100%);">
+                <MudIcon Icon="@Icons.Material.Filled.Gavel" Size="Size.Large" Color="Color.Surface" />
+            </MudAvatar>
+            <MudText Typo="Typo.h3" Class="mb-2">Términos de Servicio</MudText>
+            <MudText Class="text-secondary" Style="opacity: 0.8;">Última actualización: @DateTime.Now.ToString("dd/MM/yyyy")</MudText>
+        </div>
+
+        <!-- Contenido de los Términos -->
+        <div class="terms-content">
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">1. Aceptación de los Términos</MudText>
+            <MudText Class="mb-4">
+                Al acceder y utilizar el Sistema de Inventario (en adelante, "el Servicio"), usted acepta cumplir con estos Términos de Servicio y todas las leyes y regulaciones aplicables. Si no está de acuerdo con alguno de estos términos, no podrá acceder ni utilizar el Servicio.
+            </MudText>
+
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">2. Uso del Servicio</MudText>
+            <MudText Class="mb-2">Usted acepta utilizar el Servicio únicamente para fines legales y de acuerdo con estos Términos. Específicamente, usted se compromete a no:</MudText>
+            <ul class="mb-4">
+                <li>Utilizar el Servicio de manera fraudulenta o con fines ilícitos.</li>
+                <li>Intentar acceder a áreas restringidas del Servicio sin autorización.</li>
+                <li>Interferir con el funcionamiento normal del Servicio o con la experiencia de otros usuarios.</li>
+                <li>Utilizar el Servicio para enviar comunicaciones no solicitadas o no autorizadas.</li>
+            </ul>
+
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">3. Cuentas de Usuario</MudText>
+            <MudText Class="mb-4">
+                Para acceder a ciertas funcionalidades del Servicio, deberá crear una cuenta. Usted es responsable de mantener la confidencialidad de su contraseña y de todas las actividades que ocurran bajo su cuenta. Notifíquenos inmediatamente cualquier uso no autorizado de su cuenta.
+            </MudText>
+
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">4. Propiedad Intelectual</MudText>
+            <MudText Class="mb-4">
+                El Servicio y su contenido original, características y funcionalidades son y seguirán siendo propiedad exclusiva de Inventario y sus licenciantes. Nada en estos Términos constituye una transferencia de derechos de propiedad intelectual.
+            </MudText>
+
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">5. Limitación de Responsabilidad</MudText>
+            <MudText Class="mb-4">
+                En la máxima medida permitida por la ley, en ningún caso Inventario será responsable por daños indirectos, incidentales, especiales, consecuentes o punitivos, o cualquier pérdida de beneficios o ingresos, ya sea incurrida directa o indirectamente.
+            </MudText>
+
+            <MudText Typo="Typo.h5" Class="mb-2 mt-6">6. Modificaciones</MudText>
+            <MudText Class="mb-6">
+                Nos reservamos el derecho de modificar estos Términos en cualquier momento. Le notificaremos sobre cambios sustanciales a través del correo electrónico asociado a su cuenta o mediante un aviso en nuestro sitio web. El uso continuado del Servicio después de dichos cambios constituye su aceptación de los nuevos Términos.
+            </MudText>
+
+            <div class="text-center mt-8">
+                <MudButton 
+                    Variant="Variant.Outlined" 
+                    Color="Color.Primary" 
+                    StartIcon="@Icons.Material.Filled.ArrowBack"
+                    @onclick="@(e => Navigation.NavigateTo("/"))">
+                    Volver al inicio
+                </MudButton>
+            </div>
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private MudTheme _termsTheme = new MudTheme();
+    
+    protected override async Task OnInitializedAsync()
+    {
+        // Agregar clase al body para el estilo de la página
+        await JSRuntime.InvokeAsync<object>("eval", "document.body.classList.add('terms-page')");
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        // Remover clase del body al salir de la página
+        await JSRuntime.InvokeAsync<object>("eval", "document.body.classList.remove('terms-page')");
+    }
+}

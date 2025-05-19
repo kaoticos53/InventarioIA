@@ -1,0 +1,289 @@
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using Inventario.Core;
+using MailKit.Net.Smtp;
+using MailKit.Security;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using MimeKit;
+using MimeKit.Text;
+
+namespace Inventario.Web.Services.Implementations
+{
+    public class MailtrapEmailService : IEmailService
+    {
+        private readonly EmailSettings _emailSettings;
+        private readonly ILogger<MailtrapEmailService> _logger;
+        private readonly AppRuntimeContext _appRuntime;
+
+        public MailtrapEmailService(
+            IOptions<EmailSettings> emailSettings, 
+            ILogger<MailtrapEmailService> logger,
+            AppRuntimeContext appRuntime)
+        {
+            _emailSettings = emailSettings?.Value ?? throw new ArgumentNullException(nameof(emailSettings));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _appRuntime = appRuntime ?? throw new ArgumentNullException(nameof(appRuntime));
+            
+            // Validar configuración
+            if (string.IsNullOrEmpty(_emailSettings.SmtpServer) || 
+                _emailSettings.SmtpPort <= 0 || 
+                string.IsNullOrEmpty(_emailSettings.SmtpUsername) || 
+                string.IsNullOrEmpty(_emailSettings.SmtpPassword))
+            {
+                _logger.LogWarning("La configuración de correo electrónico no está completa. Verifica la configuración en appsettings.json");
+            }
+        }
+
+        public async Task<EmailResponse> SendEmailAsync(EmailRequest request)
+        {
+            if (string.IsNullOrEmpty(request.ToEmail))
+                throw new ArgumentException("La dirección de correo electrónico del destinatario es requerida", nameof(request.ToEmail));
+                
+            if (string.IsNullOrEmpty(request.Subject))
+                throw new ArgumentException("El asunto del correo es requerido", nameof(request.Subject));
+                
+            if (string.IsNullOrEmpty(request.Body))
+                throw new ArgumentException("El contenido del mensaje es requerido", nameof(request.Body));
+
+            try
+            {
+                _logger.LogInformation("Preparando envío de correo a {ToEmail} con asunto: {Subject}", request.ToEmail, request.Subject);
+                
+                var email = new MimeMessage();
+                email.From.Add(new MailboxAddress(_emailSettings.SenderName, _emailSettings.SenderEmail));
+                email.To.Add(MailboxAddress.Parse(request.ToEmail));
+                email.Subject = request.Subject;
+                email.Body = new TextPart(request.IsHtml ? TextFormat.Html : TextFormat.Plain) { Text = request.Body };
+
+                using var smtp = new SmtpClient();
+                
+                _logger.LogDebug("Conectando al servidor SMTP {Server}:{Port}...", _emailSettings.SmtpServer, _emailSettings.SmtpPort);
+                await smtp.ConnectAsync(
+                    _emailSettings.SmtpServer, 
+                    _emailSettings.SmtpPort, 
+                    _emailSettings.EnableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None);
+                
+                _logger.LogDebug("Autenticando con el servidor SMTP...");
+                await smtp.AuthenticateAsync(_emailSettings.SmtpUsername, _emailSettings.SmtpPassword);
+                
+                _logger.LogDebug("Enviando mensaje...");
+                await smtp.SendAsync(email);
+                
+                _logger.LogDebug("Desconectando del servidor SMTP...");
+                await smtp.DisconnectAsync(true);
+
+                _logger.LogInformation($"Correo enviado exitosamente a {request.ToEmail}");
+                return new EmailResponse { Success = true, Message = "Correo enviado exitosamente" };
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = $"Error al enviar correo a {request.ToEmail}";
+                _logger.LogError(ex, errorMessage);
+                return new EmailResponse { Success = false, Message = errorMessage };
+            }
+        }
+
+        public async Task<EmailResponse> SendVerificationEmailAsync(string email, string verificationLink)
+        {
+            _logger.LogInformation("Preparando correo de verificación para {Email}", email);
+            
+            var appSettings = _appRuntime.CurrentSettings;
+            var subject = $"Verifica tu dirección de correo electrónico - {appSettings.AppName}";
+            var message = await GetEmailTemplate("VerifyEmail.html");
+            message = message
+                .Replace("{{verificationLink}}", verificationLink)
+                .Replace("{{appName}}", appSettings.AppName)
+                .Replace("{{tagline}}", appSettings.Tagline ?? "")
+                .Replace("{{companyName}}", appSettings.CompanyName ?? appSettings.AppName)
+                .Replace("{{supportEmail}}", appSettings.SupportEmail ?? "soporte@ejemplo.com")
+                .Replace("{{websiteUrl}}", appSettings.WebsiteUrl ?? "https://ejemplo.com")
+                .Replace("{{primaryColor}}", appSettings.PrimaryColor ?? "#4a6cf7")
+                .Replace("{{secondaryColor}}", appSettings.SecondaryColor ?? "#6c5ce7")
+                .Replace("{{year}}", DateTime.Now.Year.ToString());
+
+            await SendEmailAsync(email, subject, message);
+        }
+
+        public async Task<EmailResponse> SendPasswordResetEmailAsync(string email, string resetLink)
+        {
+            _logger.LogInformation("Preparando correo de restablecimiento de contraseña para {Email}", email);
+            
+            var appSettings = _appRuntime.CurrentSettings;
+            var subject = $"Restablece tu contraseña - {appSettings.AppName}";
+            var message = await GetEmailTemplate("ResetPassword.html");
+            message = message
+                .Replace("{{resetLink}}", resetLink)
+                .Replace("{{appName}}", appSettings.AppName)
+                .Replace("{{tagline}}", appSettings.Tagline ?? "")
+                .Replace("{{companyName}}", appSettings.CompanyName ?? appSettings.AppName)
+                .Replace("{{supportEmail}}", appSettings.SupportEmail ?? "soporte@ejemplo.com")
+                .Replace("{{websiteUrl}}", appSettings.WebsiteUrl ?? "https://ejemplo.com")
+                .Replace("{{primaryColor}}", appSettings.PrimaryColor ?? "#4a6cf7")
+                .Replace("{{secondaryColor}}", appSettings.SecondaryColor ?? "#6c5ce7")
+                .Replace("{{year}}", DateTime.Now.Year.ToString());
+
+            await SendEmailAsync(email, subject, message);
+        }
+        
+        public async Task<EmailResponse> SendRegistrationConfirmationEmailAsync(string email, string userName, string confirmationLink)
+        {
+            _logger.LogInformation("Preparando correo de confirmación de registro para {Email}", email);
+            
+            var appSettings = _appRuntime.CurrentSettings;
+            var subject = $"¡Bienvenido a {appSettings.AppName}!";
+            var message = await GetEmailTemplate("RegistrationConfirmation.html");
+            message = message
+                .Replace("{{userName}}", userName)
+                .Replace("{{confirmationLink}}", confirmationLink)
+                .Replace("{{appName}}", appSettings.AppName)
+                .Replace("{{tagline}}", appSettings.Tagline ?? "")
+                .Replace("{{companyName}}", appSettings.CompanyName ?? appSettings.AppName)
+                .Replace("{{supportEmail}}", appSettings.SupportEmail ?? "soporte@ejemplo.com")
+                .Replace("{{websiteUrl}}", appSettings.WebsiteUrl ?? "https://ejemplo.com")
+                .Replace("{{primaryColor}}", appSettings.PrimaryColor ?? "#4a6cf7")
+                .Replace("{{secondaryColor}}", appSettings.SecondaryColor ?? "#6c5ce7")
+                .Replace("{{year}}", DateTime.Now.Year.ToString());
+                
+            await SendEmailAsync(email, subject, message);
+        }
+        
+        public async Task<EmailResponse> SendWelcomeEmailAsync(string email, string userName)
+        {
+            _logger.LogInformation("Preparando correo de bienvenida para {Email}", email);
+            
+            var appSettings = _appRuntime.CurrentSettings;
+            var subject = $"¡Bienvenido a {appSettings.AppName}!";
+            var message = await GetEmailTemplate("WelcomeEmail.html");
+            message = message
+                .Replace("{{userName}}", userName)
+                .Replace("{{appName}}", appSettings.AppName)
+                .Replace("{{tagline}}", appSettings.Tagline ?? "")
+                .Replace("{{companyName}}", appSettings.CompanyName ?? appSettings.AppName)
+                .Replace("{{supportEmail}}", appSettings.SupportEmail ?? "soporte@ejemplo.com")
+                .Replace("{{websiteUrl}}", appSettings.WebsiteUrl ?? "https://ejemplo.com")
+                .Replace("{{primaryColor}}", appSettings.PrimaryColor ?? "#4a6cf7")
+                .Replace("{{secondaryColor}}", appSettings.SecondaryColor ?? "#6c5ce7")
+                .Replace("{{year}}", DateTime.Now.Year.ToString())
+                .Replace("{{currentDate}}", DateTime.Now.ToString("dd/MM/yyyy HH:mm"));
+                
+            await SendEmailAsync(email, subject, message);
+        }
+        
+        public async Task<EmailResponse> SendPasswordChangedEmailAsync(string email, string userName)
+        {
+            _logger.LogInformation("Preparando notificación de cambio de contraseña para {Email}", email);
+            
+            var appSettings = _appRuntime.CurrentSettings;
+            var subject = $"Tu contraseña ha sido actualizada - {appSettings.AppName}";
+            var message = await GetEmailTemplate("PasswordChanged.html");
+            message = message
+                .Replace("{{userName}}", userName)
+                .Replace("{{appName}}", appSettings.AppName)
+                .Replace("{{tagline}}", appSettings.Tagline ?? "")
+                .Replace("{{companyName}}", appSettings.CompanyName ?? appSettings.AppName)
+                .Replace("{{supportEmail}}", appSettings.SupportEmail ?? "soporte@ejemplo.com")
+                .Replace("{{websiteUrl}}", appSettings.WebsiteUrl ?? "https://ejemplo.com")
+                .Replace("{{primaryColor}}", appSettings.PrimaryColor ?? "#4a6cf7")
+                .Replace("{{secondaryColor}}", appSettings.SecondaryColor ?? "#6c5ce7")
+                .Replace("{{year}}", DateTime.Now.Year.ToString())
+                .Replace("{{currentDate}}", DateTime.Now.ToString("dd/MM/yyyy HH:mm"));
+                
+            await SendEmailAsync(email, subject, message);
+        }
+
+        private async Task<string> GetEmailTemplate(string templateName)
+        {
+            try
+            {
+                var templatePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "EmailTemplates", templateName);
+                
+                if (!File.Exists(templatePath))
+                {
+                    _logger.LogError("No se encontró la plantilla de correo {TemplateName} en {Path}", templateName, templatePath);
+                    
+                    // Crear una plantilla HTML simple como respaldo
+                    if (templateName.Contains("Verify", StringComparison.OrdinalIgnoreCase) || 
+                        templateName.Contains("Confirmation", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return await GetSimpleVerificationTemplate();
+                    }
+                    else if (templateName.Contains("Reset", StringComparison.OrdinalIgnoreCase) || 
+                             templateName.Contains("Password", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return await GetSimplePasswordResetTemplate();
+                    }
+                    else
+                    {
+                        return await GetSimpleGenericTemplate();
+                    }
+                }
+
+                return await File.ReadAllTextAsync(templatePath);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al cargar la plantilla de correo {TemplateName}", templateName);
+                return await GetSimpleGenericTemplate();
+            }
+        }
+        
+        private async Task<string> GetSimpleVerificationTemplate()
+        {
+            return @"
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Verificación de correo electrónico</title>
+                <style>body{font-family:Arial,sans-serif;line-height:1.6;margin:0;padding:20px;color:#333;}</style>
+            </head>
+            <body>
+                <h2>Verifica tu dirección de correo electrónico</h2>
+                <p>Por favor, haz clic en el siguiente enlace para verificar tu dirección de correo electrónico:</p>
+                <p><a href='{{verificationLink}}' style='color: #4a6cf7;'>Verificar mi correo electrónico</a></p>
+                <p>Si no has creado una cuenta, puedes ignorar este mensaje.</p>
+                <p>Saludos,<br>El equipo de {{appName}}</p>
+            </body>
+            </html>";
+        }
+        
+        private async Task<string> GetSimplePasswordResetTemplate()
+        {
+            return @"
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Restablecer contraseña</title>
+                <style>body{font-family:Arial,sans-serif;line-height:1.6;margin:0;padding:20px;color:#333;}</style>
+            </head>
+            <body>
+                <h2>Restablece tu contraseña</h2>
+                <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta.</p>
+                <p>Haz clic en el siguiente enlace para crear una nueva contraseña:</p>
+                <p><a href='{{resetLink}}' style='color: #4a6cf7;'>Restablecer contraseña</a></p>
+                <p>Si no has solicitado restablecer tu contraseña, puedes ignorar este mensaje.</p>
+                <p>Saludos,<br>El equipo de {{appName}}</p>
+            </body>
+            </html>";
+        }
+        
+        private async Task<string> GetSimpleGenericTemplate()
+        {
+            return @"
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Notificación</title>
+                <style>body{font-family:Arial,sans-serif;line-height:1.6;margin:0;padding:20px;color:#333;}</style>
+            </head>
+            <body>
+                <h2>Notificación de {{appName}}</h2>
+                <p>Has recibido este correo porque hay una notificación importante para ti.</p>
+                <p>Por favor, inicia sesión en tu cuenta para ver los detalles.</p>
+                <p>Saludos,<br>El equipo de {{appName}}</p>
+            </body>
+            </html>";
+        }
+    }
+}

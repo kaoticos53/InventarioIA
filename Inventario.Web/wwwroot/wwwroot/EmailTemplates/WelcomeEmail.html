@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Bienvenido a {{appName}}!</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, {{primaryColor}}, {{secondaryColor}});
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .button {
+            display: inline-block;
+            background: {{primaryColor}};
+            color: white !important;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .button:hover {
+            background: {{secondaryColor}};
+        }
+        .footer {
+            background: #f5f5f5;
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+        .features {
+            margin: 25px 0;
+        }
+        .feature {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .feature-icon {
+            background: #e3f2fd;
+            color: #4a6cf7;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        .feature-text {
+            flex: 1;
+        }
+        .feature-text h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+        .feature-text p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1 style="margin: 0 0 10px 0; font-size: 28px; color: white;">{{appName}}</h1>
+            <p style="margin: 0 0 20px 0; font-size: 16px; color: rgba(255, 255, 255, 0.9);">{{tagline}}</p>
+            <h2 style="margin: 0; font-size: 22px; color: white;">¡Bienvenido a bordo, {{userName}}!</h2>
+        </div>
+        <div class='content'>
+            <p>Hola {{userName}},</p>
+            <p>¡Gracias por unirte a <strong>{{appName}}</strong>! Estamos emocionados de tenerte a bordo.</p>
+            
+            <p>Con tu cuenta, ahora puedes:</p>
+            
+            <div class='features'>
+                <div class='feature'>
+                    <div class='feature-icon'>✓</div>
+                    <div class='feature-text'>
+                        <h3>Gestionar tu inventario</h3>
+                        <p>Lleva un control detallado de todos tus productos y existencias.</p>
+                    </div>
+                </div>
+                
+                <div class='feature'>
+                    <div class='feature-icon'>✓</div>
+                    <div class='feature-text'>
+                        <h3>Realizar seguimiento de movimientos</h3>
+                        <p>Registra entradas, salidas y ajustes de inventario de manera sencilla.</p>
+                    </div>
+                </div>
+                
+                <div class='feature'>
+                    <div class='feature-icon'>✓</div>
+                    <div class='feature-text'>
+                        <h3>Generar reportes</h3>
+                        <p>Obtén informes detallados para tomar mejores decisiones de negocio.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style='text-align: center; margin: 30px 0;'>
+                <a href='{{appUrl}}' class='button'>Comenzar a usar {{appName}}</a>
+            </div>
+            
+            <p>Si tienes alguna pregunta o necesitas ayuda, no dudes en <a href='mailto:{{supportEmail}}' style='color: {{primaryColor}};'>contactar a nuestro equipo de soporte</a>.</p>
+            
+            <p>¡Esperamos que disfrutes usando nuestra plataforma!</p>
+            
+            <p>Saludos,<br>El equipo de <strong>{{appName}}</strong></p>
+        </div>
+        <div class='footer'>
+            <p>© {{year}} {{companyName}}. Todos los derechos reservados.</p>
+            <p><small>Si tienes alguna pregunta, por favor contacta a <a href="mailto:{{supportEmail}}" style="color: {{primaryColor}}; text-decoration: none;">{{supportEmail}}</a></small></p>
+            <p><small><a href="{{websiteUrl}}" style="color: {{primaryColor}}; text-decoration: none;">{{websiteUrl}}</a></small></p>
+            <p><small>Este es un correo automático, por favor no respondas a este mensaje.</small></p>
+        </div>
+    </div>
+</body>
+</html>

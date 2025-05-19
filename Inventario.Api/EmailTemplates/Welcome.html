@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>¡Bienvenido a {{AppName}}!</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; padding: 30px 0; border-bottom: 2px solid #4CAF50; }
+        .content { padding: 25px 0; }
+        .button {
+            display: inline-block; 
+            padding: 12px 30px; 
+            background-color: #4CAF50; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 4px; 
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer { 
+            margin-top: 40px; 
+            padding-top: 20px; 
+            border-top: 1px solid #eee; 
+            font-size: 13px; 
+            color: #666; 
+            text-align: center; 
+            line-height: 1.5;
+        }
+        .features { 
+            margin: 25px 0;
+            padding: 0;
+        }
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .feature-icon {
+            color: #4CAF50;
+            font-size: 20px;
+            margin-right: 10px;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 style="color: #4CAF50; margin: 0;">¡Bienvenido a {{AppName}}!</h1>
+        <p style="color: #666; margin: 10px 0 0 0;">Estamos encantados de tenerte con nosotros</p>
+    </div>
+    
+    <div class="content">
+        <p>Hola {{UserName}},</p>
+        
+        <p>¡Gracias por unirte a {{AppName}}! Estamos emocionados de que formes parte de nuestra comunidad. Con tu cuenta, ahora puedes:</p>
+        
+        <div class="features">
+            <div class="feature-item">
+                <div class="feature-icon">✓</div>
+                <div>
+                    <h3 style="margin: 0 0 5px 0;">Gestionar equipos</h3>
+                    <p style="margin: 0; color: #555;">Registra y realiza un seguimiento de todos los equipos audiovisuales.</p>
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">✓</div>
+                <div>
+                    <h3 style="margin: 0 0 5px 0;">Reportar averías</h3>
+                    <p style="margin: 0; color: #555;">Notifica problemas con los equipos de manera rápida y sencilla.</p>
+                </div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">✓</div>
+                <div>
+                    <h3 style="margin: 0 0 5px 0;">Seguimiento en tiempo real</h3>
+                    <p style="margin: 0; color: #555;">Mantente informado sobre el estado de tus reportes.</p>
+                </div>
+            </div>
+        </div>
+        
+        <p style="text-align: center; margin: 30px 0;">
+            <a href="{{LoginUrl}}" class="button">Comenzar ahora</a>
+        </p>
+        
+        <p>Si tienes alguna pregunta o necesitas ayuda, no dudes en contactar a nuestro equipo de soporte en <a href="mailto:{{SupportEmail}}">{{SupportEmail}}</a> o visita nuestra <a href="{{SupportUrl}}">página de soporte</a>.</p>
+        
+        <p>¡Esperamos que disfrutes usando {{AppName}}!</p>
+        
+        <p>Saludos cordiales,<br>El equipo de {{AppName}}</p>
+    </div>
+    
+    <div class="footer">
+        <p>© {{Year}} {{AppName}}. Todos los derechos reservados.</p>
+        <p>
+            <a href="{{AppUrl}}/privacidad" style="color: #4CAF50; text-decoration: none;">Política de privacidad</a> | 
+            <a href="{{AppUrl}}/terminos" style="color: #4CAF50; text-decoration: none;">Términos de servicio</a>
+        </p>
+        <p>
+            <a href="{{AppUrl}}" style="color: #4CAF50; text-decoration: none;">Visitar sitio web</a>
+        </p>
+    </div>
+    
+    <script>
+        // Añadir el año actual dinámicamente
+        document.addEventListener('DOMContentLoaded', function() {
+            var yearElements = document.getElementsByClassName('year');
+            var currentYear = new Date().getFullYear();
+            for (var i = 0; i < yearElements.length; i++) {
+                yearElements[i].textContent = currentYear;
+            }
+        });
+    </script>
+</body>
+</html>

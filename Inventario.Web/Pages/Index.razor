@@ -1,0 +1,247 @@
+@page "/"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@using MudBlazor
+
+<PageTitle>Inicio - Sistema de Inventario</PageTitle>
+
+<div class="d-flex flex-column">
+    <!-- Encabezado con bienvenida -->
+    <MudPaper Class="pa-6 mb-6" Elevation="0">
+        <MudText Typo="Typo.h4" Class="mb-2">Bienvenido, Administrador</MudText>
+        <MudText Class="text-muted">Aquí tienes un resumen de tu inventario</MudText>
+    </MudPaper>
+
+    <!-- Tarjetas de resumen -->
+    <MudGrid Spacing="3" Justify="Justify.FlexStart">
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudPaper Class="pa-4 rounded-lg" Elevation="1">
+                <div class="d-flex align-center">
+                    <MudAvatar Color="Color.Primary" Class="mr-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Inventory" />
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="text-muted">Productos</MudText>
+                        <MudText Typo="Typo.h5">1,245</MudText>
+                    </div>
+                </div>
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.caption" Class="text-success">
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" /> 12% desde el mes pasado
+                </MudText>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudPaper Class="pa-4 rounded-lg" Elevation="1">
+                <div class="d-flex align-center">
+                    <MudAvatar Color="Color.Secondary" Class="mr-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Input" />
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="text-muted">Entradas</MudText>
+                        <MudText Typo="Typo.h5">48</MudText>
+                    </div>
+                </div>
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.caption" Class="text-success">
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowUpward" Size="Size.Small" /> 5% desde el mes pasado
+                </MudText>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudPaper Class="pa-4 rounded-lg" Elevation="1">
+                <div class="d-flex align-center">
+                    <MudAvatar Color="Color.Tertiary" Class="mr-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Output" />
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="text-muted">Salidas</MudText>
+                        <MudText Typo="Typo.h5">32</MudText>
+                    </div>
+                </div>
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.caption" Class="text-error">
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowDownward" Size="Size.Small" /> 2% desde el mes pasado
+                </MudText>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4" lg="3">
+            <MudPaper Class="pa-4 rounded-lg" Elevation="1">
+                <div class="d-flex align-center">
+                    <MudAvatar Color="Color.Info" Class="mr-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Warning" />
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="text-muted">Bajo stock</MudText>
+                        <MudText Typo="Typo.h5">18</MudText>
+                    </div>
+                </div>
+                <MudDivider Class="my-2" />
+                <MudText Typo="Typo.caption" Class="text-warning">
+                    <MudIcon Icon="@Icons.Material.Filled.Warning" Size="Size.Small" /> Reabastecer pronto
+                </MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    <!-- Gráficos y tablas -->
+    <MudGrid Class="mt-6" Spacing="3">
+        <!-- Gráfico de movimientos -->
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-4 rounded-lg" Elevation="1">
+                <div class="d-flex justify-space-between align-center mb-4">
+                    <MudText Typo="Typo.h6">Movimientos recientes</MudText>
+                    <MudSelect T="int" Value="30" Variant="Variant.Outlined" Dense="true" Style="max-width: 120px;" Class="ml-2">
+                        <MudSelectItem Value="7">Últimos 7 días</MudSelectItem>
+                        <MudSelectItem Value="30">Últimos 30 días</MudSelectItem>
+                        <MudSelectItem Value="90">Últimos 90 días</MudSelectItem>
+                    </MudSelect>
+                </div>
+                <MudChart Height="300" ChartType="ChartType.Line" XAxisLabels="@_xAxisLabels" ChartOptions="_chartOptions" ChartSeries="_chartSeries" />
+            </MudPaper>
+        </MudItem>
+
+        <!-- Productos con bajo stock -->
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-4 rounded-lg" Elevation="1">
+                <div class="d-flex justify-space-between align-center mb-4">
+                    <MudText Typo="Typo.h6">Productos con bajo stock</MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" />
+                </div>
+                
+                @foreach (var product in _lowStockProducts)
+                {
+                    <MudPaper Class="pa-3 mb-2 rounded-lg" Elevation="0" Style="background: rgba(var(--mud-palette-primary-rgb), 0.08);">
+                        <div class="d-flex justify-space-between align-center">
+                            <div>
+                                <MudText Class="font-weight-medium">@product.Name</MudText>
+                                <MudText Typo="Typo.caption" Class="text-muted">Stock: @product.Stock (Mín: @product.MinStock)</MudText>
+                            </div>
+                            <MudChip T="string" Color="Color.Warning" Size="Size.Small">Reabastecer</MudChip>
+                        </div>
+                    </MudPaper>
+                }
+                
+                <div class="text-center mt-3">
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Filled.ArrowForward">
+                        Ver todos
+                    </MudButton>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Movimientos recientes -->
+        <MudItem xs="12">
+            <MudPaper Class="pa-4 rounded-lg" Elevation="1">
+                <div class="d-flex justify-space-between align-center mb-4">
+                    <MudText Typo="Typo.h6">Movimientos recientes</MudText>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" EndIcon="@Icons.Material.Filled.Add">
+                        Nuevo movimiento
+                    </MudButton>
+                </div>
+                
+                <MudTable Items="@_recentMovements" Hover="true" Striped="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh>ID</MudTh>
+                        <MudTh>Tipo</MudTh>
+                        <MudTh>Producto</MudTh>
+                        <MudTh Style="text-align: right;">Cantidad</MudTh>
+                        <MudTh>Fecha</MudTh>
+                        <MudTh>Usuario</MudTh>
+                        <MudTh>Estado</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="ID">#@context.Id</MudTd>
+                        <MudTd DataLabel="Tipo">
+                            <MudChip T="string" Size="Size.Small" Color="@(context.Type == "Entrada" ? Color.Success : Color.Error)" Variant="Variant.Filled">
+                                @context.Type
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="Producto">@context.ProductName</MudTd>
+                        <MudTd DataLabel="Cantidad" Style="text-align: right;">@context.Quantity</MudTd>
+                        <MudTd DataLabel="Fecha">@context.Date.ToString("dd/MM/yyyy HH:mm")</MudTd>
+                        <MudTd DataLabel="Usuario">@context.User</MudTd>
+                        <MudTd DataLabel="Estado">
+                            <MudChip T="string" Size="Size.Small" Color="@(context.Status == "Completado" ? Color.Success : Color.Info)" Variant="Variant.Filled">
+                                @context.Status
+                            </MudChip>
+                        </MudTd>
+                        <MudTd>
+                            <MudIconButton Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Color="Color.Primary" />
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+                
+                <div class="d-flex justify-end mt-3">
+                    <MudPagination Count="5" Selected="1" BoundaryCount="2" />
+                </div>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</div>
+
+@code {
+    private string[] _xAxisLabels = Enumerable.Range(1, 30).Select(i => $"{i}").ToArray();
+    
+    private ChartOptions _chartOptions = new ChartOptions
+    {
+        XAxisLines = true,
+        YAxisLines = true,
+        ChartPalette = new string[] { "#7E6FFF", "#FF80AB" }
+    };
+    
+    private List<ChartSeries> _chartSeries = new List<ChartSeries>
+    {
+        new ChartSeries
+        {
+            Name = "Entradas",
+            Data = new double[] { 30, 40, 35, 50, 49, 60, 70, 91, 125, 100, 90, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270, 280, 290 }
+        },
+        new ChartSeries
+        {
+            Name = "Salidas",
+            Data = new double[] { 20, 30, 25, 40, 39, 50, 60, 81, 105, 80, 70, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230, 240, 250, 260, 270 }
+        }
+    };
+    
+    private List<ProductStock> _lowStockProducts = new List<ProductStock>
+    {
+        new ProductStock { Id = 1, Name = "Laptop HP ProBook", Stock = 2, MinStock = 5 },
+        new ProductStock { Id = 2, Name = "Mouse Inalámbrico Logitech", Stock = 3, MinStock = 10 },
+        new ProductStock { Id = 3, Name = "Teclado Mecánico RGB", Stock = 4, MinStock = 8 },
+        new ProductStock { Id = 4, Name = "Monitor 24\" Full HD", Stock = 1, MinStock = 3 },
+        new ProductStock { Id = 5, Name = "Disco Duro Externo 1TB", Stock = 2, MinStock = 5 }
+    };
+    
+    private List<Movement> _recentMovements = new List<Movement>
+    {
+        new Movement { Id = 1001, Type = "Entrada", ProductName = "Laptop HP ProBook", Quantity = 10, Date = DateTime.Now.AddDays(-1), User = "admin", Status = "Completado" },
+        new Movement { Id = 1002, Type = "Salida", ProductName = "Mouse Inalámbrico Logitech", Quantity = -5, Date = DateTime.Now.AddDays(-1), User = "jperez", Status = "Completado" },
+        new Movement { Id = 1003, Type = "Entrada", ProductName = "Teclado Mecánico RGB", Quantity = 15, Date = DateTime.Now.AddDays(-2), User = "admin", Status = "Completado" },
+        new Movement { Id = 1004, Type = "Salida", ProductName = "Monitor 24\" Full HD", Quantity = -3, Date = DateTime.Now.AddDays(-3), User = "mgonzalez", Status = "Pendiente" },
+        new Movement { Id = 1005, Type = "Entrada", ProductName = "Disco Duro Externo 1TB", Quantity = 8, Date = DateTime.Now.AddDays(-4), User = "admin", Status = "Completado" }
+    };
+    
+    private class ProductStock
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int Stock { get; set; }
+        public int MinStock { get; set; }
+    }
+    
+    private class Movement
+    {
+        public int Id { get; set; }
+        public string Type { get; set; }
+        public string ProductName { get; set; }
+        public int Quantity { get; set; }
+        public DateTime Date { get; set; }
+        public string User { get; set; }
+        public string Status { get; set; }
+    }
+}

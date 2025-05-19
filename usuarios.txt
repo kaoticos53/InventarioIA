@@ -1,0 +1,16 @@
+ID: 8ed9fef5-39f7-44c4-a85e-25c7991a8aa2
+Username: admin@inventario.com
+Email: admin@inventario.com
+Email Confirmado: Sí
+Teléfono: NULL
+Cuenta Bloqueada: No
+Intentos Fallidos: 0
+----------------------------------------
+ID: c9ef6827-2ad6-4f79-adf6-bff30224bd7e
+Username: pepe@pepe.pe
+Email: pepe@pepe.pe
+Email Confirmado: Sí
+Teléfono: NULL
+Cuenta Bloqueada: No
+Intentos Fallidos: 0
+----------------------------------------
